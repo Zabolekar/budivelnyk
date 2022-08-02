@@ -1,6 +1,6 @@
 from ctypes import CDLL, c_char
 
-buffer = bytearray(6)
+buffer = bytearray(3)
 
 c_array_type = c_char * len(buffer)
 libhello = CDLL("./libhello.so")
