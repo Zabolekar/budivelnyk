@@ -37,10 +37,11 @@ if __name__ == "__main__":
             elif c == '<':
                 write("decq %rdi")
             elif c == '[':
-                write("start:", "cmpb $0, (%rdi)", "je end")
-                # TODO: enumerate labels
+                suffix = f"{i}_{forward_jumps[i]}"
+                write(f"start_{suffix}:", "cmpb $0, (%rdi)", f"je end_{suffix}")
             elif c == ']':
-                write("jmp start", "end:")
+                suffix = f"{backward_jumps[i]}_{i}"
+                write(f"jmp start_{suffix}", f"end_{suffix}:")
                 # TODO: enumerate labels
             # TODO: ,.
         write("ret", '.section .note.GNU-stack,"",@progbits')
