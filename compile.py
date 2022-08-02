@@ -42,6 +42,5 @@ if __name__ == "__main__":
             elif c == ']':
                 suffix = f"{backward_jumps[i]}_{i}"
                 write(f"jmp start_{suffix}", f"end_{suffix}:")
-                # TODO: enumerate labels
             # TODO: ,.
         write("ret", '.section .note.GNU-stack,"",@progbits')
