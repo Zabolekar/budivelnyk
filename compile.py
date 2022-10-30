@@ -43,6 +43,6 @@ if __name__ == "__main__":
                 suffix = f"{backward_jumps[i]}_{i}"
                 write(f"jmp start_{suffix}", f"end_{suffix}:")
             elif c == ".":
-                write("movq %rdi, %r12", "movq (%rdi), %rdi", "call putchar", "movq %r12, %rdi")
+                write("pushq %rdi", "movq (%rdi), %rdi", "call putchar", "popq %rdi")
             # TODO: , command
         write("ret", '.section .note.GNU-stack,"",@progbits')
