@@ -54,8 +54,7 @@ def compile_to_x86_64(bf_code):
     yield "ret"
     yield '.section .note.GNU-stack,"",@progbits'
 
-if __name__ == "__main__":
-    input_path, output_path = argv[1:]
+def main(input_path: str, output_path: str):
     with open(input_path) as input_file:
         bf_code = input_file.read()
 
@@ -65,3 +64,7 @@ if __name__ == "__main__":
             print(*lines, sep="\n", file=output_file)
         else:
             raise RuntimeError("unknown architecture")
+
+if __name__ == "__main__":
+    input_path, output_path = argv[1:]
+    main(input_path, output_path)
