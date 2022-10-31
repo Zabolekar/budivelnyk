@@ -1,8 +1,9 @@
 """
-Compile bf to x86_64 asm. Cell size is one byte.
+Compile bf to asm. Cell size is one byte.
 """
 
 from sys import argv
+from platform import machine
 
 def fill_jump_tables(bf_code: str) -> tuple[dict[int, int], dict[int, int]]:
     forward_jumps = {}
@@ -17,6 +18,41 @@ def fill_jump_tables(bf_code: str) -> tuple[dict[int, int], dict[int, int]]:
             backward_jumps[i] = j
     return forward_jumps, backward_jumps
 
+def compile_to_x86_64(bf_code):
+    yield ".globl run"
+    yield ".type run, @function"
+    yield "run:"
+    for i, c in enumerate(bf_code):
+        if c == '+':
+            yield "incb (%rdi)"
+        elif c == '-':
+            yield "decb (%rdi)"
+        elif c == '>':
+            yield "incq %rdi"
+        elif c == '<':
+            yield "decq %rdi"
+        elif c == '[':
+            suffix = f"{i}_{forward_jumps[i]}"
+            yield f"start_{suffix}:"
+            yield "cmpb $0, (%rdi)"
+            yield f"je end_{suffix}"
+        elif c == ']':
+            suffix = f"{backward_jumps[i]}_{i}"
+            yield f"jmp start_{suffix}"
+            yield f"end_{suffix}:"
+        elif c == ".":
+            yield "pushq %rdi"
+            yield "movq (%rdi), %rdi"
+            yield "call putchar"
+            yield "popq %rdi"
+        elif c == ",":
+            yield "pushq %rdi"
+            yield "call getchar"
+            yield "popq %rdi"
+            yield "movb %al, (%rdi)"
+    yield "ret"
+    yield '.section .note.GNU-stack,"",@progbits'
+
 if __name__ == "__main__":
     input_path, output_path = argv[1:]
     with open(input_path) as input_file:
@@ -25,25 +61,8 @@ if __name__ == "__main__":
     forward_jumps, backward_jumps = fill_jump_tables(bf_code)
 
     with open(output_path, 'w') as output_file:
-        write = lambda *args: print(*args, sep="\n", file=output_file)
-        write(".globl run", ".type run, @function", "run:")
-        for i, c in enumerate(bf_code):
-            if c == '+':
-                write("incb (%rdi)")
-            elif c == '-':
-                write("decb (%rdi)")
-            elif c == '>':
-                write("incq %rdi")
-            elif c == '<':
-                write("decq %rdi")
-            elif c == '[':
-                suffix = f"{i}_{forward_jumps[i]}"
-                write(f"start_{suffix}:", "cmpb $0, (%rdi)", f"je end_{suffix}")
-            elif c == ']':
-                suffix = f"{backward_jumps[i]}_{i}"
-                write(f"jmp start_{suffix}", f"end_{suffix}:")
-            elif c == ".":
-                write("pushq %rdi", "movq (%rdi), %rdi", "call putchar", "popq %rdi")
-            elif c == ",":
-                write("pushq %rdi", "call getchar", "popq %rdi", "movb %al, (%rdi)")
-        write("ret", '.section .note.GNU-stack,"",@progbits')
+        if machine() == "x86_64":
+            lines = compile_to_x86_64(bf_code)
+            print(*lines, sep="\n", file=output_file)
+        else:
+            raise RuntimeError("unknown architecture")
