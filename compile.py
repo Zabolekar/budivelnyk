@@ -44,5 +44,6 @@ if __name__ == "__main__":
                 write(f"jmp start_{suffix}", f"end_{suffix}:")
             elif c == ".":
                 write("pushq %rdi", "movq (%rdi), %rdi", "call putchar", "popq %rdi")
-            # TODO: , command
+            elif c == ",":
+                write("pushq %rdi", "call getchar", "popq %rdi", "movb %al, (%rdi)")
         write("ret", '.section .note.GNU-stack,"",@progbits')
