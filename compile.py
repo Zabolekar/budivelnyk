@@ -5,20 +5,21 @@ Compile bf to asm. Cell size is one byte.
 from sys import argv
 from platform import machine
 
-def fill_jump_tables(bf_code: str) -> tuple[dict[int, int], dict[int, int]]:
-    forward_jumps = {}
-    backward_jumps = {}
+def fill_jump_tables(bf_code: str) -> dict[int, int]:
+    jumps = {}
     stack = []
     for i, c in enumerate(bf_code):
         if c == '[':
             stack.append(i)
         elif c == ']':
             j = stack.pop()
-            forward_jumps[j] = i
-            backward_jumps[i] = j
-    return forward_jumps, backward_jumps
+            jumps[j] = i
+            jumps[i] = j
+    return jumps
 
 def compile_to_x86_64(bf_code):
+    jumps = fill_jump_tables(bf_code)
+
     yield ".globl run"
     yield ".type run, @function"
     yield "run:"
@@ -32,12 +33,12 @@ def compile_to_x86_64(bf_code):
         elif c == '<':
             yield "decq %rdi"
         elif c == '[':
-            suffix = f"{i}_{forward_jumps[i]}"
+            suffix = f"{i}_{jumps[i]}"
             yield f"start_{suffix}:"
             yield "cmpb $0, (%rdi)"
             yield f"je end_{suffix}"
         elif c == ']':
-            suffix = f"{backward_jumps[i]}_{i}"
+            suffix = f"{jumps[i]}_{i}"
             yield f"jmp start_{suffix}"
             yield f"end_{suffix}:"
         elif c == ".":
@@ -57,8 +58,6 @@ if __name__ == "__main__":
     input_path, output_path = argv[1:]
     with open(input_path) as input_file:
         bf_code = input_file.read()
-
-    forward_jumps, backward_jumps = fill_jump_tables(bf_code)
 
     with open(output_path, 'w') as output_file:
         if machine() == "x86_64":
