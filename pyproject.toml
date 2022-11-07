@@ -1,0 +1,12 @@
+[project]
+name = "budivelnyk"
+description = "bf to asm compiler"
+version = "0.0.1"
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "mypy"
+]

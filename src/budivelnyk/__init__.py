@@ -2,7 +2,7 @@
 Compile bf to asm. Cell size is one byte.
 """
 
-from sys import argv
+import subprocess
 from platform import machine
 
 def fill_jump_tables(bf_code: str) -> dict[int, int]:
@@ -17,7 +17,8 @@ def fill_jump_tables(bf_code: str) -> dict[int, int]:
             jumps[i] = j
     return jumps
 
-def compile_to_x86_64(bf_code):
+
+def bf_to_x86_64(bf_code):
     jumps = fill_jump_tables(bf_code)
 
     yield ".globl run"
@@ -54,17 +55,20 @@ def compile_to_x86_64(bf_code):
     yield "ret"
     yield '.section .note.GNU-stack,"",@progbits'
 
-def main(input_path: str, output_path: str):
+
+def bf_to_asm(input_path: str, output_path: str):
     with open(input_path) as input_file:
         bf_code = input_file.read()
 
     with open(output_path, 'w') as output_file:
         if machine() == "x86_64":
-            lines = compile_to_x86_64(bf_code)
+            lines = bf_to_x86_64(bf_code)
             print(*lines, sep="\n", file=output_file)
         else:
             raise RuntimeError("unknown architecture")
 
-if __name__ == "__main__":
-    input_path, output_path = argv[1:]
-    main(input_path, output_path)
+
+def bf_to_shared(input_path: str, asm_path: str, output_path: str):
+    bf_to_asm(input_path, asm_path)
+    asm_to_shared = ["cc", "-shared", "-o", output_path, asm_path]
+    subprocess.run(asm_to_shared).check_returncode()

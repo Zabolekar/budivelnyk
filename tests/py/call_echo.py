@@ -1,6 +1,6 @@
+from sys import argv
 from ctypes import CDLL
 
-libecho = CDLL("./libecho.so")
+libecho = CDLL(argv[1])
 buffer = bytes(1)
 libecho.run(buffer)
-print()
