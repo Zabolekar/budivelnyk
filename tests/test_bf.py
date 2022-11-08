@@ -47,3 +47,19 @@ def test_echo():
 			assert output == input
 			assert not error
 
+
+def test_fibs():
+	with TemporaryDirectory() as tmp:
+		bf = "tests/bf/fibs.bf"
+		asm = path.join(tmp, "fibs.s")
+		library = path.join(tmp, "libfibs.so")
+		bf_to_shared(bf, asm, library)
+
+		libfibs = CDLL(library)
+		buffer = bytes([0, 1, 0, 0])
+		fibs = []
+		for i in range(14):
+			libfibs.run(buffer)
+			fibs.append(buffer[0])
+		# 121 because the cell overflows:
+		assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
