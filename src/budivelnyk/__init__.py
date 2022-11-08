@@ -83,7 +83,7 @@ def generate_x86_64(intermediate: list[str]):
             yield f"end_{suffix}:"
         elif command.startswith("."):
             yield "pushq %rdi"
-            yield "movq (%rdi), %rdi"
+            yield "movzbq (%rdi), %rdi"
             sequence = ["call putchar", "mov %rax, %rdi"] * n
             yield from sequence[:-1]
             yield "popq %rdi"
