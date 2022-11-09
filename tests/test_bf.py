@@ -11,7 +11,7 @@ targets = Target.candidates()
 @pytest.mark.parametrize("target", targets)
 def test_inc(target):
     with TemporaryDirectory() as tmp:
-        bf = "tests/bf/inc.bf"
+        bf = "tests/bf/increment_string.bf"
         asm = path.join(tmp, "inc.s")
         library = path.join(tmp, "libinc.so")
         bf_to_shared(bf, asm, library, target=target)
@@ -20,9 +20,29 @@ def test_inc(target):
         # We need bytes(list(...)) to prevent Python from
         # reusing the same buffer between test runs.
         buffer = bytes(list(b"Gdkkn+\x1f`rrdlakx "))
-        print(buffer)
         libinc.run(buffer)
         assert buffer == b"Hello, assembly!"
+
+
+@pytest.mark.parametrize("target", targets)
+def test_dec(target):
+    with TemporaryDirectory() as tmp:
+        bf = "tests/bf/zero_minus_one.bf"
+        asm = path.join(tmp, "zmo.s")
+        library = path.join(tmp, "libzmo.so")
+        bf_to_shared(bf, asm, library, target=target)
+
+        libzmo = CDLL(library)
+        a = b"\x00"
+        b = b" "
+        c = b"2"
+        libzmo.run(a)
+        libzmo.run(b)
+        libzmo.run(c)
+        assert a == b == c == b"\xff"
+        d = b"1234"
+        libzmo.run(d)
+        assert d == b"\xff234"
 
 
 @pytest.mark.parametrize("target", targets)
