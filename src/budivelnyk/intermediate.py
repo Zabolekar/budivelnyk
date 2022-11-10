@@ -16,62 +16,73 @@ class Command(Node):
 
 # BF commands
 
+@dataclass
 class Increment(Command):
     """ Increment current cell's value. """
-    def __repr__(self) -> str:
-        return 'Increment'
-
-class Decrement(Command):
-    """ Decrement current cell's value. """
-    def __repr__(self) -> str:
-        return 'Decrement'
-
-class MoveForward(Command):
-    """ Increment cell pointer. """
-    def __repr__(self) -> str:
-        return 'MoveForward'
-
-class MoveBack(Command):
-    """ Decrement cell pointer. """
-    def __repr__(self) -> str:
-        return 'MoveBack'
-
-class Output(Command):
-    """ Output current cell's value. """
-    def __repr__(self) -> str:
-        return 'Output'
-
-class Input(Command):
-    """ Store input value in current cell. """
-    def __repr__(self) -> str:
-        return 'Input'
+    pass
 
 @dataclass
-class Cycle(Node):
-    """ While current cell's value is non-zero, repeat cycle's body. """
+class Decrement(Command):
+    """ Decrement current cell's value. """
+    pass
+
+@dataclass
+class MoveForward(Command):
+    """ Increment cell pointer. """
+    pass
+
+@dataclass
+class MoveBack(Command):
+    """ Decrement cell pointer. """
+    pass
+
+@dataclass
+class Output(Command):
+    """ Output current cell's value. """
+    pass
+
+@dataclass
+class Input(Command):
+    """ Store input value in current cell. """
+    pass
+
+@dataclass
+class Loop(Node):
+    """ While current cell's value is non-zero, repeat loop's body. """
     body: list[Node]
-    
-    def __repr__(self) -> str:
-        return f'Cycle{self.body}'
 
 
 # Optimization commands
 
 @dataclass
-class AddConstant(Command):
+class Add(Command):
     """ Add constant to current cell's value. """
     constant: int
-    
-    def __repr__(self) -> str:
-        return f'AddConstant({self.constant})'
 
 @dataclass
-class MoveByConstant(Command):
+class Subtract(Command):
+    """ Subtract constant from current cell's value. """
+    constant: int
+
+@dataclass
+class MoveForwardBy(Command):
     """ Add constant to cell pointer. """
     constant: int
-    
-    def __repr__(self) -> str:
-        return f'MoveByConstant({self.constant})'
+
+@dataclass
+class MoveBackBy(Command):
+    """ Subtract constant from cell pointer. """
+    constant: int
+
+@dataclass
+class MultipleOutput(Command):
+    """ Output current cell's value multiple times. """
+    count: int
+
+@dataclass
+class MultipleInput(Command):
+    """ Get multiple input values and store the last one in current cell. """
+    count: int
 
 
 # Optimizations
@@ -85,16 +96,20 @@ def same_command_sequence_optimization(intermediate: list[Node]) -> list[Node]:
         count = len(group)
         match group[0]:
             case Increment() if count > 1:
-                result.append(AddConstant(count))
+                result.append(Add(count))
             case Decrement() if count > 1:
-                result.append(AddConstant(-count))
+                result.append(Subtract(count))
             case MoveForward() if count > 1:
-                result.append(MoveByConstant(count))
+                result.append(MoveForwardBy(count))
             case MoveBack() if count > 1:
-                result.append(MoveByConstant(-count))
-            case Cycle(body):
+                result.append(MoveBackBy(count))
+            case Output() if count > 1:
+                result.append(MultipleOutput(count))
+            case Input() if count > 1:
+                result.append(MultipleInput(count))
+            case Loop(body):
                 optimized_body = same_command_sequence_optimization(body)
-                result.append(Cycle(optimized_body))
+                result.append(Loop(optimized_body))
             case _:
                 result.extend(group)
     return result
@@ -123,7 +138,7 @@ def _bf_sequence_to_intermediate(sequence: Iterable[str], expect_closing_bracket
             case ',': yield Input()
             case '[':
                 body = _bf_sequence_to_intermediate(sequence, expect_closing_bracket=True)
-                yield Cycle(list(body))
+                yield Loop(list(body))
             case ']':
                 if expect_closing_bracket:
                     break
