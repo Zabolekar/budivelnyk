@@ -1,9 +1,9 @@
 from typing import Iterator
 
 from .intermediate import (
-    Node, Cycle,
+    Node, Loop,
     Increment, Decrement, MoveForward, MoveBack, Output, Input,
-    AddConstant, MoveByConstant
+    Add, Subtract, MoveForwardBy, MoveBackBy, MultipleOutput, MultipleInput
 )
 
 def generate_x86_64_att(intermediate: list[Node]) -> Iterator[str]:
@@ -20,15 +20,17 @@ def _generate_prologue() -> Iterator[str]:
 
 
 def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
-    cycle_id = 0
+    loop_id = 0
     for node in intermediate:
         match node:
-            case Increment():       yield  '    incb   (%rdi)'
-            case Decrement():       yield  '    decb   (%rdi)'
-            case AddConstant(n):    yield f'    addb   ${n}, (%rdi)'
-            case MoveForward():     yield  '    incq   %rdi'
-            case MoveBack():        yield  '    decq   %rdi'
-            case MoveByConstant(n): yield f'    addq   ${n}, %rdi'
+            case Increment():      yield  '    incb   (%rdi)'
+            case Decrement():      yield  '    decb   (%rdi)'
+            case Add(n):           yield f'    addb   ${n}, (%rdi)'
+            case Subtract(n):      yield f'    subb   ${n}, (%rdi)'
+            case MoveForward():    yield  '    incq   %rdi'
+            case MoveBack():       yield  '    decq   %rdi'
+            case MoveForwardBy(n): yield f'    addq   ${n}, %rdi'
+            case MoveBackBy(n):    yield f'    subq   ${n}, %rdi'
             case Output():
                 yield '    pushq  %rdi'
                 yield '    movzbq (%rdi), %rdi'
@@ -39,15 +41,26 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
                 yield '    call   getchar'
                 yield '    popq   %rdi'
                 yield '    movb   %al, (%rdi)'
-            case Cycle(body):
-                label = f'{parent_label}_{cycle_id}'
+            case MultipleOutput(count):
+                yield '    pushq  %rdi'
+                yield '    movzbq (%rdi), %rdi'
+                sequence = ['    call   putchar', '    mov    %rax, %rdi'] * count
+                yield from sequence[:-1]
+                yield '    popq   %rdi'
+            case MultipleInput(count):
+                yield '    pushq  %rdi'
+                yield from ['    call   getchar'] * count
+                yield '    popq   %rdi'
+                yield '    movb   %al, (%rdi)'
+            case Loop(body):
+                label = f'{parent_label}_{loop_id}'
                 yield f'start{label}:'
                 yield  '    cmpb   $0, (%rdi)'
                 yield f'    je     end{label}'
                 yield from _generate_body(body, label)
                 yield f'    jmp    start{label}'
                 yield f'end{label}:'
-                cycle_id += 1
+                loop_id += 1
 
 
 def _generate_epilogue() -> Iterator[str]:
