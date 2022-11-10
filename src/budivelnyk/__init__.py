@@ -51,6 +51,7 @@ def generate_x86_64_att(intermediate: list[str]) -> Iterator[str]:
 
     yield ".globl run"
     yield ".type run, @function"
+    yield ""
     yield "run:"
 
     for i, command in enumerate(intermediate):
@@ -58,46 +59,47 @@ def generate_x86_64_att(intermediate: list[str]) -> Iterator[str]:
 
         if command.startswith("+"):
             if n == 1:
-                yield "incb (%rdi)"
+                yield "    incb (%rdi)"
             else:
-                yield f"addb ${n}, (%rdi)"
+                yield f"    addb ${n}, (%rdi)"
         elif command.startswith("-"):
             if n == 1:
-                yield "decb (%rdi)"
+                yield "    decb (%rdi)"
             else:
-                yield f"subb ${n}, (%rdi)"
+                yield f"    subb ${n}, (%rdi)"
         elif command.startswith(">"):
             if n == 1:
-                yield "incq %rdi"
+                yield "    incq %rdi"
             else:
-                yield f"addq ${n}, %rdi"
+                yield f"    addq ${n}, %rdi"
         elif command.startswith("<"):
             if n == 1:
-                yield "decq %rdi"
+                yield "    decq %rdi"
             else:
-                yield f"subq ${n}, %rdi"
+                yield f"    subq ${n}, %rdi"
         elif command == '[':
             suffix = f"{i}_{jumps[i]}"
             yield f"start_{suffix}:"
-            yield "cmpb $0, (%rdi)"
-            yield f"je end_{suffix}"
+            yield "    cmpb $0, (%rdi)"
+            yield f"    je end_{suffix}"
         elif command == ']':
             suffix = f"{jumps[i]}_{i}"
-            yield f"jmp start_{suffix}"
+            yield f"    jmp start_{suffix}"
             yield f"end_{suffix}:"
         elif command.startswith("."):
-            yield "pushq %rdi"
-            yield "movzbq (%rdi), %rdi"
-            sequence = ["call putchar", "mov %rax, %rdi"] * n
+            yield "    pushq %rdi"
+            yield "    movzbq (%rdi), %rdi"
+            sequence = ["    call putchar", "    mov %rax, %rdi"] * n
             yield from sequence[:-1]
-            yield "popq %rdi"
+            yield "    popq %rdi"
         elif command.startswith(","):
-            yield "pushq %rdi"
-            yield from ["call getchar"] * n
-            yield "popq %rdi"
-            yield "movb %al, (%rdi)"
-    yield "ret"
-    yield '.section .note.GNU-stack,"",@progbits'
+            yield "    pushq %rdi"
+            yield from ["    call getchar"] * n
+            yield "    popq %rdi"
+            yield "    movb %al, (%rdi)"
+    yield "    ret"
+    yield ""
+    yield '.section .note.GNU-stack, "", @progbits'
 
 
 def generate_x86_64_intel(intermediate: list[str]) -> Iterator[str]:
@@ -106,6 +108,7 @@ def generate_x86_64_intel(intermediate: list[str]) -> Iterator[str]:
     yield ".globl run"
     yield ".intel_syntax noprefix"
     yield ".type run, @function"
+    yield ""
     yield "run:"
 
     for i, command in enumerate(intermediate):
@@ -113,46 +116,47 @@ def generate_x86_64_intel(intermediate: list[str]) -> Iterator[str]:
 
         if command.startswith("+"):
             if n == 1:
-                yield "inc byte ptr [rdi]"
+                yield "    inc byte ptr [rdi]"
             else:
-                yield f"add byte ptr [rdi], {n}"
+                yield f"    add byte ptr [rdi], {n}"
         elif command.startswith("-"):
             if n == 1:
-                yield "dec byte ptr [rdi]"
+                yield "    dec byte ptr [rdi]"
             else:
-                yield f"sub byte ptr [rdi], {n}"
+                yield f"    sub byte ptr [rdi], {n}"
         elif command.startswith(">"):
             if n == 1:
-                yield "inc rdi"
+                yield "    inc rdi"
             else:
-                yield f"add rdi, {n}"
+                yield f"    add rdi, {n}"
         elif command.startswith("<"):
             if n == 1:
-                yield "dec rdi"
+                yield "    dec rdi"
             else:
-                yield f"sub rdi, {n}"
+                yield f"    sub rdi, {n}"
         elif command == '[':
             suffix = f"{i}_{jumps[i]}"
             yield f"start_{suffix}:"
-            yield "cmp byte ptr [rdi], 0"
-            yield f"je end_{suffix}"
+            yield "    cmp byte ptr [rdi], 0"
+            yield f"    je end_{suffix}"
         elif command == ']':
             suffix = f"{jumps[i]}_{i}"
-            yield f"jmp start_{suffix}"
+            yield f"    jmp start_{suffix}"
             yield f"end_{suffix}:"
         elif command.startswith("."):
-            yield "push rdi"
-            yield "movzx rdi, byte ptr [rdi]"
-            sequence = ["call putchar", "mov rdi, rax"] * n
+            yield "    push rdi"
+            yield "    movzx rdi, byte ptr [rdi]"
+            sequence = ["    call putchar", "    mov rdi, rax"] * n
             yield from sequence[:-1]
-            yield "pop rdi"
+            yield "    pop rdi"
         elif command.startswith(","):
-            yield "push rdi"
-            yield from ["call getchar"] * n
-            yield "pop rdi"
-            yield "mov byte ptr [rdi], al"
-    yield "ret"
-    yield '.section .note.GNU-stack,"",@progbits'
+            yield "    push rdi"
+            yield from ["    call getchar"] * n
+            yield "    pop rdi"
+            yield "    mov byte ptr [rdi], al"
+    yield "    ret"
+    yield ""
+    yield '.section .note.GNU-stack, "", @progbits'
 
 
 class Target(enum.Enum):
