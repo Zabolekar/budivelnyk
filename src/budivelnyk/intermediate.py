@@ -1,7 +1,7 @@
 from typing import Iterable, Callable
 from dataclasses import dataclass
 from itertools import groupby
-
+from warnings import warn
 
 # Abstract base classes
 
@@ -108,13 +108,19 @@ def same_command_sequence_optimization(intermediate: list[Node]) -> list[Node]:
             case Input() if count > 1:
                 result.append(MultipleInput(count))
             case Loop(body):
+                # We optimize consecutive loops of the form [a][b][c] into [a].
+                # After the execution of the first loop the current cell always
+                # contains 0, so the following loops won't be executed anyway.
+                if count > 1:
+                    warn("Unreachable code detected and eliminated", RuntimeWarning)
+                # TODO: add line number and position
                 optimized_body = same_command_sequence_optimization(body)
                 result.append(Loop(optimized_body))
             case _:
                 result.extend(group)
     return result
 
-default_optimizations = [same_command_sequence_optimization]
+default_optimizations: list[Optimization] = [same_command_sequence_optimization]
 
 
 # Parsing BF code

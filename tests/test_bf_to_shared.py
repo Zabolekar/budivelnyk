@@ -5,6 +5,7 @@ from subprocess import run, Popen, PIPE
 import pytest
 from budivelnyk import bf_to_shared, Target
 
+
 targets = Target.candidates()
 
 
@@ -86,3 +87,4 @@ def test_fibs(target, tmp_path):
         fibs.append(buffer[0])
     # 121 because the cell overflows:
     assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
+

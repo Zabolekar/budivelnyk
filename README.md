@@ -41,3 +41,6 @@ You may also give the program a pointer to the middle of the tape and not the be
 ## Optimisations
 
 The compiler performs simple optimisations like folding every sequence of the form `+++++` or `<<` into one assembly instruction.
+
+The compiler also eliminates some unreachable code. For example, in constructions like `[-][+]` the second loop will not be executed, as the cell already contains 0, so it's safe to skip it during compilation. People usually don't write unreachable
+code on purpose other than for testing the compiler, so we emit a warning.
