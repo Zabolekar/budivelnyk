@@ -13,10 +13,10 @@ def generate_x86_64_intel(intermediate: list[Node]) -> Iterator[str]:
 
 
 def _generate_prologue() -> Iterator[str]:
-    yield '.globl run'
-    yield '.intel_syntax noprefix'
-    yield '.type run, @function'
+    yield '    .intel_syntax noprefix'
     yield ''
+    yield '    .globl run'
+    yield '    .type run, @function'
     yield 'run:'
 
 
@@ -67,4 +67,4 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
 def _generate_epilogue() -> Iterator[str]:
     yield '    ret'
     yield ''
-    yield '.section .note.GNU-stack, "", @progbits'
+    yield '    .section .note.GNU-stack, "", @progbits'
