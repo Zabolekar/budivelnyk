@@ -12,6 +12,9 @@ Supported targets currently are:
 - Linux on x86_64 (Intel syntax)
 - Linux on x86_64 (AT&T syntax)
 
+Work in progress:
+- NetBSD on ARM64 (`.,` don't work yet)
+
 ## Usage
 
 Example usage:
