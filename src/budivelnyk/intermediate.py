@@ -1,4 +1,4 @@
-from typing import Iterable, Callable
+from typing import Iterable, Callable, TypeAlias
 from dataclasses import dataclass
 from itertools import groupby
 from warnings import warn
@@ -85,12 +85,14 @@ class MultipleInput(Command):
     count: int
 
 
+AST: TypeAlias = list[Node]
+
 # Optimizations
 
-Optimization = Callable[[list[Node]], list[Node]]
+Optimization = Callable[[AST], AST]
 
-def same_command_sequence_optimization(intermediate: list[Node]) -> list[Node]:
-    result: list[Node] = []
+def same_command_sequence_optimization(intermediate: AST) -> AST:
+    result: AST = []
     for (_, g) in groupby(intermediate, lambda node: type(node)):
         group = list(g)
         count = len(group)
@@ -120,15 +122,15 @@ def same_command_sequence_optimization(intermediate: list[Node]) -> list[Node]:
                 result.extend(group)
     return result
 
-default_optimizations: list[Optimization] = [same_command_sequence_optimization]
+optimizations: list[Optimization] = [same_command_sequence_optimization]
 
 
 # Parsing BF code
 
-def bf_to_intermediate(bf_code: str, optimizations: list[Optimization]|None=None) -> list[Node]:
+def bf_to_intermediate(bf_code: str) -> AST:
     sequence = iter(bf_code)
     intermediate = list(_bf_sequence_to_intermediate(sequence, expect_closing_bracket=False))
-    for optimization in optimizations or default_optimizations:
+    for optimization in optimizations:
         intermediate = optimization(intermediate)
     return intermediate
 
