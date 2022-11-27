@@ -4,7 +4,11 @@ Budivelnyk is a compiler from bf to asm. The name comes from Ukrainian *буді
 
 ## Supported Input
 
-Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we support. A cell is one byte large. 255 + 1 = 0 and 0 - 1 = 255. Leaving tape boundaries may or may not cause segmentation fault.
+Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we support. More precisely, it's the following bf variant:
+- A cell is one byte large.
+- 255 + 1 = 0 and 0 - 1 = 255.
+- Leaving tape boundaries may or may not cause segmentation fault.
+- Reading EOF with `,` saves 0 into the current cell.
 
 ## Supported Targets
 

@@ -64,9 +64,9 @@ def test_echo(target, tmp_path):
 
     call_echo = [sys.executable, "tests/py/call_echo.py", library]
     with Popen(call_echo, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
-        input = b"123\n456\0"
+        input = b"123\n456"
         output, error = process.communicate(input=input, timeout=3)
-        assert output == input
+        assert output == input + b"\0" # because we treat EOF as 0
         assert not error
 
 
