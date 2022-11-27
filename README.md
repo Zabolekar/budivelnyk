@@ -11,9 +11,7 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 Supported targets currently are:
 - Linux on x86_64 (Intel syntax)
 - Linux on x86_64 (AT&T syntax)
-
-Work in progress:
-- NetBSD on ARM64 (`.,` don't work yet)
+- NetBSD on ARM64
 
 ## Usage
 

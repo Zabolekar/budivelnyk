@@ -50,13 +50,47 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
             case MoveBackBy(n):
                 yield f'    sub    x0, x0, {n}'
             case Output():
-                raise NotImplementedError
+                yield  '    stp    x29, x30, [sp, -32]!'
+                yield  '    mov    x29, sp'
+                yield  '    str    x19, [sp, 16]'
+                yield  '    mov    x19, x0'
+                yield  '    ldrb   w0, [x0]'
+                yield  '    bl     putchar'
+                yield  '    mov    x0, x19'
+                yield  '    ldr    x19, [sp, 16]'
+                yield  '    ldp    x29, x30, [sp], 32'
             case Input():
-                raise NotImplementedError
+                yield  '    stp    x29, x30, [sp, -32]!'
+                yield  '    mov    x29, sp'
+                yield  '    str    x19, [sp, 16]'
+                yield  '    mov    x19, x0'
+                yield  '    bl     getchar'
+                yield  '    mov    w1, w0'
+                yield  '    mov    x0, x19'
+                yield  '    strb   w1, [x0]'
+                yield  '    ldr    x19, [sp, 16]'
+                yield  '    ldp    x29, x30, [sp], 32'
             case MultipleOutput(count):
-                raise NotImplementedError
+                yield  '    stp    x29, x30, [sp, -32]!'
+                yield  '    mov    x29, sp'
+                yield  '    str    x19, [sp, 16]'
+                yield  '    mov    x19, x0'
+                yield  '    ldrb   w0, [x0]'
+                yield from ['    bl     putchar'] * count
+                yield  '    mov    x0, x19'
+                yield  '    ldr    x19, [sp, 16]'
+                yield  '    ldp    x29, x30, [sp], 32'
             case MultipleInput(count):
-                raise NotImplementedError
+                yield  '    stp    x29, x30, [sp, -32]!'
+                yield  '    mov    x29, sp'
+                yield  '    str    x19, [sp, 16]'
+                yield  '    mov    x19, x0'
+                yield from ['    bl     getchar'] * count
+                yield  '    mov    w1, w0'
+                yield  '    mov    x0, x19'
+                yield  '    strb   w1, [x0]'
+                yield  '    ldr    x19, [sp, 16]'
+                yield  '    ldp    x29, x30, [sp], 32'
             case Loop(body):
                 label = f'{parent_label}_{loop_id}'
                 yield f'start{label}:'
