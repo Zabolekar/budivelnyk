@@ -16,12 +16,7 @@ from .arm64 import generate_arm64
 class Target(enum.Enum):
     X86_64_INTEL = enum.auto()
     X86_64_ATT = enum.auto()
-    X86_32_INTEL = enum.auto()
-    X86_32_ATT = enum.auto()
-    
     ARM64 = enum.auto()
-    ARM32 = enum.auto()
-    # ...
     
     @staticmethod
     def suggest() -> Target:
