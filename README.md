@@ -2,16 +2,35 @@
 
 Budivelnyk is a compiler from bf to asm. The name comes from Ukrainian *будівельник* 'builder'.
 
-## Supported input
+## Supported Input
 
 Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we support. A cell is one byte large. 255 + 1 = 0 and 0 - 1 = 255. Leaving tape boundaries may or may not cause segmentation fault.
 
-## Supported targets
+## Supported Targets
 
 Supported targets currently are:
 - Linux on x86_64 (Intel syntax)
 - Linux on x86_64 (AT&T syntax)
 - NetBSD on ARM64
+
+## Requirements
+
+The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and GCC. We also use mypy for typechecking.
+
+## Installation
+
+1. Make sure that you have git, GCC and Python 3.10 installed.
+2. Clone the repository with `git clone https://github.com/Zabolekar/budivelnyk/` and switch into the folder with `cd budivelnyk`.
+3. Create an environment, activate it and install pytest and budivelnyk itself. There are many ways to do that, the simplest is the following:
+
+```sh
+python3 -m venv ~/venvs/budivelnyk
+. ~/venvs/budivelnyk/bin/activate
+pip install pytest
+pip install -e .
+```
+
+4. Run `pytest` to verify that everything works.
 
 ## Usage
 
@@ -45,3 +64,7 @@ The compiler performs simple optimisations like folding every sequence of the fo
 
 The compiler also eliminates some unreachable code. For example, in constructions like `[-][+]` the second loop will not be executed, as the cell already contains 0, so it's safe to skip it during compilation. People usually don't write unreachable
 code on purpose other than for testing the compiler, so we emit a warning.
+
+## Frequently Asked Questions
+
+No questions have been asked yet.
