@@ -1,6 +1,6 @@
 import sys
 from os import path
-from ctypes import CDLL
+from ctypes import CDLL, create_string_buffer
 from subprocess import run, Popen, PIPE
 import pytest
 from budivelnyk import bf_file_to_shared, Target
@@ -17,11 +17,9 @@ def test_inc(target, tmp_path):
     bf_file_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
-    # We need bytes(list(...)) to prevent Python from
-    # reusing the same buffer between test runs.
-    buffer = bytes(list(b"Gdkkn+\x1f`rrdlakx "))
+    buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ", 16)
     libinc.run(buffer)
-    assert buffer == b"Hello, assembly!"
+    assert bytes(buffer) == b"Hello, assembly!"
 
 
 @pytest.mark.parametrize("target", targets)
@@ -32,16 +30,16 @@ def test_dec(target, tmp_path):
     bf_file_to_shared(bf, asm, library, target=target)
 
     libzmo = CDLL(library)
-    a = b"\x00"
-    b = b" "
-    c = b"2"
+    a = create_string_buffer(b"\x00", 1)
+    b = create_string_buffer(b" ", 1)
+    c = create_string_buffer(b"2", 1)
     libzmo.run(a)
     libzmo.run(b)
     libzmo.run(c)
-    assert a == b == c == b"\xff"
-    d = b"1234"
+    assert bytes(a) == bytes(b) == bytes(c) == b"\xff"
+    d = create_string_buffer(b"1234", 4)
     libzmo.run(d)
-    assert d == b"\xff234"
+    assert bytes(d) == b"\xff234"
 
 
 @pytest.mark.parametrize("target", targets)
@@ -66,9 +64,9 @@ def test_echo(target, tmp_path):
 
     call_echo = [sys.executable, "tests/py/call_echo.py", library]
     with Popen(call_echo, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
-        input = b"123\n456\0"
+        input = b"123\n456"
         output, error = process.communicate(input=input, timeout=3)
-        assert output == input
+        assert output == input + b"\0" # because we treat EOF as 0
         assert not error
 
 
@@ -80,13 +78,17 @@ def test_fibs(target, tmp_path):
     bf_file_to_shared(bf, asm, library, target=target)
 
     libfibs = CDLL(library)
-    buffer = bytes([0, 1, 0, 0])
+    buffer = create_string_buffer(bytes([0, 1, 0, 0]), 4)
     fibs = []
     for i in range(14):
         libfibs.run(buffer)
-        fibs.append(buffer[0])
+        # for some reason, subscript operator of a ctypes char array returns a bytes object of length 1:
+        element = buffer[0]
+        [byte] = element
+        fibs.append(byte)
     # 121 because the cell overflows:
     assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
+
 
 @pytest.mark.parametrize("target", targets)
 def test_consecutive_reads(target, tmp_path):

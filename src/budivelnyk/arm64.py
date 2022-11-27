@@ -59,7 +59,8 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
             case Input():
                 yield  '    mov    x19, x0'
                 yield  '    bl     getchar'
-                yield  '    mov    w1, w0'
+                yield  '    cmp    w0, 0'
+                yield  '    csel   w1, w0, wzr, ge'
                 yield  '    mov    x0, x19'
                 yield  '    strb   w1, [x0]'
             case MultipleOutput(count):
@@ -70,7 +71,8 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
             case MultipleInput(count):
                 yield  '    mov    x19, x0'
                 yield from ['    bl     getchar'] * count
-                yield  '    mov    w1, w0'
+                yield  '    cmp    w0, 0'
+                yield  '    csel   w1, w0, wzr, ge'
                 yield  '    mov    x0, x19'
                 yield  '    strb   w1, [x0]'
             case Loop(body):

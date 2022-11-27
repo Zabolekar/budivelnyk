@@ -41,6 +41,9 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
                 yield '    push  rdi'
                 yield '    call  getchar'
                 yield '    pop   rdi'
+                yield '    xor   edx, edx'
+                yield '    test  eax, eax'
+                yield '    cmovs eax, edx'
                 yield '    mov   byte ptr [rdi], al'
             case MultipleOutput(count):
                 yield '    push  rdi'
@@ -52,6 +55,9 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
                 yield '    push  rdi'
                 yield from ['    call  getchar'] * count
                 yield '    pop   rdi'
+                yield '    xor   edx, edx'
+                yield '    test  eax, eax'
+                yield '    cmovs eax, edx'
                 yield '    mov   byte ptr [rdi], al'
             case Loop(body):
                 label = f'{parent_label}_{loop_id}'

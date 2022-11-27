@@ -1,6 +1,6 @@
 from sys import argv
-from ctypes import CDLL
+from ctypes import CDLL, create_string_buffer
 
 libhello = CDLL(argv[1])
-buffer = bytes(3)
+buffer = create_string_buffer(3)
 libhello.run(buffer)
