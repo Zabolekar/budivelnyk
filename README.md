@@ -36,6 +36,8 @@ pip install -e .
 
 4. Run `pytest` to verify that everything works.
 
+Be aware that the tests that require executing machine code are only performed for the platform you run them on, e.g. tests for ARM64 won't be performed on x86_64.
+
 ## Usage
 
 Example usage:
