@@ -88,3 +88,16 @@ def test_fibs(target, tmp_path):
     # 121 because the cell overflows:
     assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
 
+@pytest.mark.parametrize("target", targets)
+def test_consecutive_reads(target, tmp_path):
+    bf = "tests/bf/reads.bf"
+    asm = path.join(tmp_path, "reads.s")
+    library = path.join(tmp_path, "libreads.so")
+    bf_to_shared(bf, asm, library, target=target)
+
+    call_reads = [sys.executable, "tests/py/call_reads.py", library]
+    with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
+        input = b"abc"
+        output, error = process.communicate(input=input, timeout=3)
+        assert not output
+        assert not error
