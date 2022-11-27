@@ -3,7 +3,7 @@ from os import path
 from ctypes import CDLL
 from subprocess import run, Popen, PIPE
 import pytest
-from budivelnyk import bf_to_shared, Target
+from budivelnyk import bf_file_to_shared, Target
 
 
 targets = Target.candidates()
@@ -14,7 +14,7 @@ def test_inc(target, tmp_path):
     bf = "tests/bf/increment_string.bf"
     asm = path.join(tmp_path, "inc.s")
     library = path.join(tmp_path, "libinc.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
     # We need bytes(list(...)) to prevent Python from
@@ -29,7 +29,7 @@ def test_dec(target, tmp_path):
     bf = "tests/bf/zero_minus_one.bf"
     asm = path.join(tmp_path, "zmo.s")
     library = path.join(tmp_path, "libzmo.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     libzmo = CDLL(library)
     a = b"\x00"
@@ -49,7 +49,7 @@ def test_hello(target, tmp_path):
     bf = "tests/bf/hello.bf"
     asm = path.join(tmp_path, "hello.s")
     library = path.join(tmp_path, "libhello.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     call_hello = [sys.executable, "tests/py/call_hello.py", library]
     result = run(call_hello, capture_output=True)
@@ -62,7 +62,7 @@ def test_echo(target, tmp_path):
     bf = "tests/bf/echo.bf"
     asm = path.join(tmp_path, "echo.s")
     library = path.join(tmp_path, "libecho.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     call_echo = [sys.executable, "tests/py/call_echo.py", library]
     with Popen(call_echo, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
@@ -77,7 +77,7 @@ def test_fibs(target, tmp_path):
     bf = "tests/bf/fibs.bf"
     asm = path.join(tmp_path, "fibs.s")
     library = path.join(tmp_path, "libfibs.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     libfibs = CDLL(library)
     buffer = bytes([0, 1, 0, 0])
@@ -93,7 +93,7 @@ def test_consecutive_reads(target, tmp_path):
     bf = "tests/bf/reads.bf"
     asm = path.join(tmp_path, "reads.s")
     library = path.join(tmp_path, "libreads.so")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, asm, library, target=target)
 
     call_reads = [sys.executable, "tests/py/call_reads.py", library]
     with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
