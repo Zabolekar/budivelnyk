@@ -36,18 +36,35 @@ pip install -e .
 
 Example usage:
 
-```python
-from budivelnyk import bf_to_asm, Target
+```pycon
+>>> from budivelnyk import bf_to_asm
+>>> asm = bf_to_asm("+++>--")
+>>> print(*asm, sep="\n")
+    .intel_syntax noprefix
 
-bf_to_asm("input.bf", "output.s", target=X86_64_ATT)
+    .globl run
+    .type run, @function
+run:
+    add   byte ptr [rdi], 3
+    inc   rdi
+    sub   byte ptr [rdi], 2
+    ret
+
+    .section .note.GNU-stack, "", @progbits
 ```
 
-The produced asm code can be manually assembled and linked to a shared library (currently only tested with gcc). You can also use the `bf_to_shared` helper function to create asm *and* the shared library directly from bf code:
+```python
+from budivelnyk import bf_file_to_asm_file, Target
+
+bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
+```
+
+The produced asm code can be manually assembled and linked to a shared library (currently only tested with GCC). You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
 
 ```python
-from budivelnyk import bf_to_shared
+from budivelnyk import bf_file_to_shared
 
-bf_to_shared("input.bf", "output.s", "liboutput.so")
+bf_file_to_shared("input.bf", "output.s", "liboutput.so")
 ```
 
 Currently, the compiler always generates exactly one function named `run` that you can use as if its definition were `void run(char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.

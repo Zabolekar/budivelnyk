@@ -45,7 +45,7 @@ def intermediate_to_asm(intermediate: AST, *, target: Target) -> Iterator[str]:
     elif target == Target.ARM64:
         yield from generate_arm64(intermediate)
 
-def bf_to_asm(bf_code: str, *, target: Target) -> Iterator[str]:
+def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:
     intermediate: AST = bf_to_intermediate(bf_code)
     yield from intermediate_to_asm(intermediate, target=target)
 
