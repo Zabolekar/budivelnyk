@@ -60,7 +60,7 @@ run:
     .section .note.GNU-stack, "", @progbits
 ```
 
-You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets can run on your hardware with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`.
+You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that can run on your hardware with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`.
 
 For convenience, there is also `bf_file_to_asm_file` that accepts input and output paths:
 
