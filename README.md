@@ -86,6 +86,19 @@ Memory for the tape has to be allocated by the caller. This has the following ad
 
 You may also give the program a pointer to the middle of the tape and not the beginning (but this probably has no practical use).
 
+### Warning about Python, Ctypes, and Bytes
+
+If your bf code doesn't modify the tape, it's convenient to use a `bytes` object as the function argument:
+
+```python
+from ctypes import CDLL
+
+mylib = CDLL("./mylib.so")
+mylib.run(b"test")
+```
+
+**Do not ever** do this if your code modifies the tape.  This will cause bizarre bugs, e.g. literals like `b"\0"` evaluating to `b"\xff"`. The Python interpreter expects all `bytes` objects to be immutable and reuses them. There are many ways to create mutable storage in Python, e.g. with `ctypes.create_string_buffer`, or by creating a contiguous numpy array and setting `mylib.run.argtypes` to `(np.ctypeslib.ndpointer(dtype=np.uint8, ndim=1, flags="C"),)`.
+
 ## Optimisations
 
 The compiler performs simple optimisations like folding every sequence of the form `+++++` or `<<` into one assembly instruction.
