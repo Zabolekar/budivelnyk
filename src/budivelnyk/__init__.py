@@ -5,8 +5,8 @@ Compile bf to asm. Cell size is one byte.
 from __future__ import annotations
 import enum
 import subprocess
+import platform
 from typing import Iterator
-from platform import system, machine, processor
 
 from .intermediate import AST, bf_to_intermediate
 from .x86_64_att import generate_x86_64_att
@@ -26,15 +26,23 @@ class Target(enum.Enum):
 
     @staticmethod
     def candidates() -> tuple[Target, ...]:
-        if system() == "Linux":
-            if machine() == "x86_64":
+        system = platform.system()
+        if system == "Linux":
+            machine = platform.machine()
+            if machine == "x86_64":
                 return (Target.X86_64_INTEL, Target.X86_64_ATT)
-            elif machine() == "riscv64":
+            elif machine == "riscv64":
                 return (Target.RISCV64,)
-        elif system() == "NetBSD" and processor() == "aarch64":
-            return (Target.ARM64,)
+            else:
+                raise RuntimeError(f"Linux on {machine} is not supported")
+        elif system == "NetBSD":
+            processor = platform.processor()
+            if processor == "aarch64":
+                return (Target.ARM64,)
+            else:
+                raise RuntimeError(f"NetBSD on {processor} is not supported")
         else:
-            raise RuntimeError("unsupported or unknown architecture")
+            raise RuntimeError(f"unsupported or unknown OS: {system}")
         
 
 def intermediate_to_asm(intermediate: AST, *, target: Target) -> Iterator[str]:
