@@ -16,6 +16,7 @@ Supported targets currently are:
 - Linux on x86_64 (Intel syntax)
 - Linux on x86_64 (AT&T syntax)
 - NetBSD on ARM64
+- Linux on RISCV64
 
 ## Requirements
 
