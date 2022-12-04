@@ -23,7 +23,7 @@ def test_inc(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_dec(target, tmp_path):
+def test_zero_minus_one(target, tmp_path):
     bf = "tests/bf/zero_minus_one.bf"
     asm = path.join(tmp_path, "zmo.s")
     library = path.join(tmp_path, "libzmo.so")
