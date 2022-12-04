@@ -40,13 +40,27 @@ class Loop(Node):
 AST: TypeAlias = list[Node]
 
 
+@dataclass
+class _Position:
+    total: int
+    line: int
+    column: int
+
 def parse_bf(code: str) -> AST:
-    sequence: Iterable[str] = iter(code)
-    return list(_parse_bf(sequence, expect_closing_bracket=False))
+    start = _Position(total=0, line=1, column=0)
+    return list(_parse_bf(code, start, expect_closing_bracket=False))
 
 
-def _parse_bf(sequence: Iterable[str], expect_closing_bracket: bool) -> Iterable[Node]:
-    for char in sequence:
+def _parse_bf(code: str, position: _Position, expect_closing_bracket: bool) -> Iterable[Node]:
+
+    found_closing_bracket: bool = False
+
+    while position.total < len(code):
+        char = code[position.total]
+
+        position.total += 1
+        position.column += 1
+
         match char:
             case '+': yield Inc()
             case '-': yield Dec()
@@ -55,14 +69,17 @@ def _parse_bf(sequence: Iterable[str], expect_closing_bracket: bool) -> Iterable
             case '.': yield Output()
             case ',': yield Input()
             case '[':
-                body = _parse_bf(sequence, expect_closing_bracket=True)
+                body = _parse_bf(code, position, expect_closing_bracket=True)
                 yield Loop(list(body))
             case ']':
                 if expect_closing_bracket:
+                    found_closing_bracket = True
                     break
                 else:
-                    raise RuntimeError('Unexpected closing bracket')
-                    # TODO: add line number and position, test it
-    else:
-        if expect_closing_bracket:
-            raise RuntimeError('Closing bracket expected') 
+                    raise ValueError(f'Unexpected closing bracket at line {position.line} column {position.column}')
+            case '\n':
+                position.line += 1
+                position.column = 0
+
+    if expect_closing_bracket and not found_closing_bracket:
+        raise ValueError('Closing bracket expected, reached end of file instead')

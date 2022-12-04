@@ -1,5 +1,3 @@
-import sys
-from os import path
 import pytest
 from budivelnyk import bf_to_intermediate
 from budivelnyk.intermediate import Loop, Subtract
