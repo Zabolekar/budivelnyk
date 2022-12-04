@@ -1,158 +1,83 @@
-from typing import Iterable, Callable, TypeAlias
+from typing import TypeAlias
 from dataclasses import dataclass
 from itertools import groupby
 from warnings import warn
+from . import bf
 
-# Abstract base classes
+# Indermediate language commands
 
 class Node:
     """ Abstract syntax tree node. """
     pass
 
-class Command(Node):
-    """ Any leaf node. """
-    pass
-
-
-# BF commands
-
 @dataclass
-class Increment(Command):
-    """ Increment current cell's value. """
-    pass
-
-@dataclass
-class Decrement(Command):
-    """ Decrement current cell's value. """
-    pass
-
-@dataclass
-class MoveForward(Command):
-    """ Increment cell pointer. """
-    pass
-
-@dataclass
-class MoveBack(Command):
-    """ Decrement cell pointer. """
-    pass
-
-@dataclass
-class Output(Command):
-    """ Output current cell's value. """
-    pass
-
-@dataclass
-class Input(Command):
-    """ Store input value in current cell. """
-    pass
-
-@dataclass
-class Loop(Node):
-    """ While current cell's value is non-zero, repeat loop's body. """
-    body: list[Node]
-
-
-# Optimization commands
-
-@dataclass
-class Add(Command):
+class Add(Node):
     """ Add constant to current cell's value. """
     constant: int
 
 @dataclass
-class Subtract(Command):
+class Subtract(Node):
     """ Subtract constant from current cell's value. """
     constant: int
 
 @dataclass
-class MoveForwardBy(Command):
+class Forward(Node):
     """ Add constant to cell pointer. """
     constant: int
 
 @dataclass
-class MoveBackBy(Command):
+class Back(Node):
     """ Subtract constant from cell pointer. """
     constant: int
 
 @dataclass
-class MultipleOutput(Command):
+class Output(Node):
     """ Output current cell's value multiple times. """
     count: int
 
 @dataclass
-class MultipleInput(Command):
+class Input(Node):
     """ Get multiple input values and store the last one in current cell. """
     count: int
 
+@dataclass
+class Loop(Node):
+    """ [] """
+    body: list[Node]
 
 AST: TypeAlias = list[Node]
 
-# Optimizations
-
-Optimization = Callable[[AST], AST]
-
-def same_command_sequence_optimization(intermediate: AST) -> AST:
+def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> AST:
     result: AST = []
-    for (_, g) in groupby(intermediate, lambda node: type(node)):
+    for (_, g) in groupby(bf_ast, lambda node: type(node)):
         group = list(g)
         count = len(group)
-        match group[0]:
-            case Increment() if count > 1:
+        specimen = group[0]
+        match specimen:
+            case bf.Inc():
                 result.append(Add(count))
-            case Decrement() if count > 1:
+            case bf.Dec():
                 result.append(Subtract(count))
-            case MoveForward() if count > 1:
-                result.append(MoveForwardBy(count))
-            case MoveBack() if count > 1:
-                result.append(MoveBackBy(count))
-            case Output() if count > 1:
-                result.append(MultipleOutput(count))
-            case Input() if count > 1:
-                result.append(MultipleInput(count))
-            case Loop(body):
+            case bf.Forward():
+                result.append(Forward(count))
+            case bf.Back():
+                result.append(Back(count))
+            case bf.Output():
+                result.append(Output(count))
+            case bf.Input():
+                result.append(Input(count))
+            case bf.Loop(bf_body):
                 # We optimize consecutive loops of the form [a][b][c] into [a].
                 # After the execution of the first loop the current cell always
                 # contains 0, so the following loops won't be executed anyway.
                 if count > 1:
                     warn("Unreachable code detected and eliminated", RuntimeWarning)
                 # TODO: add line number and position
-                optimized_body = same_command_sequence_optimization(body)
-                result.append(Loop(optimized_body))
-            case _:
-                result.extend(group)
+                body = _parsed_bf_to_intermediate(bf_body)
+                result.append(Loop(body))
     return result
 
-optimizations: list[Optimization] = [same_command_sequence_optimization]
-
-
-# Parsing BF code
 
 def bf_to_intermediate(bf_code: str) -> AST:
-    sequence = iter(bf_code)
-    intermediate = list(_bf_sequence_to_intermediate(sequence, expect_closing_bracket=False))
-    for optimization in optimizations:
-        intermediate = optimization(intermediate)
-    return intermediate
-
-
-def _bf_sequence_to_intermediate(sequence: Iterable[str], expect_closing_bracket: bool) -> Iterable[Node]:
-    for char in sequence:
-        match char:
-            case '+': yield Increment()
-            case '-': yield Decrement()
-            case '>': yield MoveForward()
-            case '<': yield MoveBack()
-            case '.': yield Output()
-            case ',': yield Input()
-            case '[':
-                body = _bf_sequence_to_intermediate(sequence, expect_closing_bracket=True)
-                yield Loop(list(body))
-            case ']':
-                if expect_closing_bracket:
-                    break
-                else:
-                    raise RuntimeError('Unexpected closing bracket')
-                    # TODO: add line number and position
-    else:
-        if expect_closing_bracket:
-            raise RuntimeError('Closing bracket expected') 
+    parsed_bf: bf.AST = bf.parse_bf(bf_code)
+    return _parsed_bf_to_intermediate(parsed_bf)

@@ -2,8 +2,7 @@ from typing import Iterator
 
 from .intermediate import (
     Node, Loop,
-    Increment, Decrement, MoveForward, MoveBack, Output, Input,
-    Add, Subtract, MoveForwardBy, MoveBackBy, MultipleOutput, MultipleInput
+    Add, Subtract, Forward, Back, Output, Input
 )
 
 def generate_arm64(intermediate: list[Node]) -> Iterator[str]:
@@ -27,14 +26,6 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
     loop_id = 0
     for node in intermediate:
         match node:
-            case Increment():
-                yield  '    ldrb   w1, [x0]'
-                yield  '    add    w1, w1, 1'
-                yield  '    strb   w1, [x0]'
-            case Decrement():
-                yield  '    ldrb   w1, [x0]'
-                yield  '    sub    w1, w1, 1'
-                yield  '    strb   w1, [x0]'
             case Add(n):
                 yield  '    ldrb   w1, [x0]'
                 yield f'    add    w1, w1, {n}'
@@ -43,34 +34,18 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
                 yield  '    ldrb   w1, [x0]'
                 yield f'    sub    w1, w1, {n}'
                 yield  '    strb   w1, [x0]'
-            case MoveForward():
-                yield  '    add    x0, x0, 1'
-            case MoveBack():
-                yield  '    sub    x0, x0, 1'
-            case MoveForwardBy(n):
+            case Forward(n):
                 yield f'    add    x0, x0, {n}'
-            case MoveBackBy(n):
+            case Back(n):
                 yield f'    sub    x0, x0, {n}'
-            case Output():
+            case Output(n):
                 yield  '    mov    x19, x0'
                 yield  '    ldrb   w0, [x0]'
-                yield  '    bl     putchar'
+                yield from ['    bl     putchar'] * n
                 yield  '    mov    x0, x19'
-            case Input():
+            case Input(n):
                 yield  '    mov    x19, x0'
-                yield  '    bl     getchar'
-                yield  '    cmp    w0, 0'
-                yield  '    csel   w1, w0, wzr, ge'
-                yield  '    mov    x0, x19'
-                yield  '    strb   w1, [x0]'
-            case MultipleOutput(count):
-                yield  '    mov    x19, x0'
-                yield  '    ldrb   w0, [x0]'
-                yield from ['    bl     putchar'] * count
-                yield  '    mov    x0, x19'
-            case MultipleInput(count):
-                yield  '    mov    x19, x0'
-                yield from ['    bl     getchar'] * count
+                yield from ['    bl     getchar'] * n
                 yield  '    cmp    w0, 0'
                 yield  '    csel   w1, w0, wzr, ge'
                 yield  '    mov    x0, x19'

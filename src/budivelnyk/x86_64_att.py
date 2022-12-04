@@ -1,12 +1,11 @@
 from typing import Iterator
 
 from .intermediate import (
-    Node, Loop,
-    Increment, Decrement, MoveForward, MoveBack, Output, Input,
-    Add, Subtract, MoveForwardBy, MoveBackBy, MultipleOutput, MultipleInput
+    AST, Loop,
+    Add, Subtract, Forward, Back, Output, Input
 )
 
-def generate_x86_64_att(intermediate: list[Node]) -> Iterator[str]:
+def generate_x86_64_att(intermediate: AST) -> Iterator[str]:
     yield from _generate_prologue()
     yield from _generate_body(intermediate)
     yield from _generate_epilogue()
@@ -18,40 +17,35 @@ def _generate_prologue() -> Iterator[str]:
     yield 'run:'
 
 
-def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
+def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
         match node:
-            case Increment():      yield  '    incb   (%rdi)'
-            case Decrement():      yield  '    decb   (%rdi)'
-            case Add(n):           yield f'    addb   ${n}, (%rdi)'
-            case Subtract(n):      yield f'    subb   ${n}, (%rdi)'
-            case MoveForward():    yield  '    incq   %rdi'
-            case MoveBack():       yield  '    decq   %rdi'
-            case MoveForwardBy(n): yield f'    addq   ${n}, %rdi'
-            case MoveBackBy(n):    yield f'    subq   ${n}, %rdi'
-            case Output():
+            case Add(1):
+                yield  '    incb   (%rdi)'
+            case Add(n):
+                yield f'    addb   ${n}, (%rdi)'
+            case Subtract(1):
+                yield  '    decb   (%rdi)'
+            case Subtract(n):
+                yield f'    subb   ${n}, (%rdi)'
+            case Forward(1):
+                yield  '    incq   %rdi'
+            case Forward(n):
+                yield f'    addq   ${n}, %rdi'
+            case Back(1):
+                yield  '    decq   %rdi'
+            case Back(n):
+                yield f'    subq   ${n}, %rdi'
+            case Output(n):
                 yield '    pushq  %rdi'
                 yield '    movzbq (%rdi), %rdi'
-                yield '    call   putchar'
-                yield '    popq   %rdi'
-            case Input():
-                yield '    pushq  %rdi'
-                yield '    call   getchar'
-                yield '    popq   %rdi'
-                yield '    xorl   %edx, %edx'
-                yield '    testl  %eax, %eax'
-                yield '    cmovs  %edx, %eax'
-                yield '    movb   %al, (%rdi)'
-            case MultipleOutput(count):
-                yield '    pushq  %rdi'
-                yield '    movzbq (%rdi), %rdi'
-                sequence = ['    call   putchar', '    mov    %rax, %rdi'] * count
+                sequence = ['    call   putchar', '    mov    %rax, %rdi'] * n
                 yield from sequence[:-1]
                 yield '    popq   %rdi'
-            case MultipleInput(count):
+            case Input(n):
                 yield '    pushq  %rdi'
-                yield from ['    call   getchar'] * count
+                yield from ['    call   getchar'] * n
                 yield '    xorl   %edx, %edx'
                 yield '    testl  %eax, %eax'
                 yield '    cmovs  %edx, %eax'
