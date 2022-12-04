@@ -1,4 +1,4 @@
-from typing import TypeAlias
+from typing import Iterable, TypeAlias
 from dataclasses import dataclass
 from itertools import groupby
 from warnings import warn
@@ -47,25 +47,24 @@ class Loop(Node):
 
 AST: TypeAlias = list[Node]
 
-def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> AST:
-    result: AST = []
+def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> Iterable[Node]:
     for (_, g) in groupby(bf_ast, lambda node: type(node)):
         group = list(g)
         count = len(group)
         specimen = group[0]
         match specimen:
             case bf.Inc():
-                result.append(Add(count))
+                yield Add(count)
             case bf.Dec():
-                result.append(Subtract(count))
+                yield Subtract(count)
             case bf.Forward():
-                result.append(Forward(count))
+                yield Forward(count)
             case bf.Back():
-                result.append(Back(count))
+                yield Back(count)
             case bf.Output():
-                result.append(Output(count))
+                yield Output(count)
             case bf.Input():
-                result.append(Input(count))
+                yield Input(count)
             case bf.Loop(bf_body):
                 # We optimize consecutive loops of the form [a][b][c] into [a].
                 # After the execution of the first loop the current cell always
@@ -74,10 +73,9 @@ def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> AST:
                     warn("Unreachable code detected and eliminated", RuntimeWarning)
                 # TODO: add line number and position
                 body = _parsed_bf_to_intermediate(bf_body)
-                result.append(Loop(body))
-    return result
+                yield Loop(list(body))
 
 
 def bf_to_intermediate(bf_code: str) -> AST:
     parsed_bf: bf.AST = bf.parse_bf(bf_code)
-    return _parsed_bf_to_intermediate(parsed_bf)
+    return list(_parsed_bf_to_intermediate(parsed_bf))
