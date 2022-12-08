@@ -45,7 +45,7 @@ Be aware that the tests that require executing machine code are only performed f
 Example usage:
 
 ```pycon
->>> from budivelnyk import bf_to_asm
+>>> from budivelnyk import bf_to_asm, Target
 >>> asm = bf_to_asm("+++>--", target=Target.X86_64_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
