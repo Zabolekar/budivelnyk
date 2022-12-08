@@ -7,7 +7,7 @@ from warnings import warn
 from typing import Iterator
 
 from .intermediate import AST, bf_to_intermediate
-from .target import Target
+from .targets import Target
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:

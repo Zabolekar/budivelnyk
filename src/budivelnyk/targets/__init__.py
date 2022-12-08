@@ -3,7 +3,7 @@ import enum
 import platform
 from typing import Iterator
 
-from .intermediate import AST
+from ..intermediate import AST
 from .x86_64_att import generate_x86_64_att
 from .x86_64_intel import generate_x86_64_intel
 from .arm64 import generate_arm64

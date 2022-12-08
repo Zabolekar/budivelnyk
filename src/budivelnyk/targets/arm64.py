@@ -1,6 +1,6 @@
 from typing import Iterator
 
-from .intermediate import (
+from ..intermediate import (
     Node, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
