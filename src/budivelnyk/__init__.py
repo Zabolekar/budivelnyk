@@ -15,18 +15,22 @@ def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[st
     yield from target.intermediate_to_asm(intermediate)
 
 
-def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    with open(input_path) as input_file:
-        bf_code = input_file.read()
-
+def bf_to_asm_file(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
     lines = bf_to_asm(bf_code, target=target)
 
     with open(output_path, 'w') as output_file:
         print(*lines, sep="\n", file=output_file)
 
 
-def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    bf_file_to_asm_file(input_path, asm_path, target=target)
+def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+    with open(input_path) as input_file:
+        bf_code = input_file.read()
+
+    bf_to_asm_file(bf_code, output_path, target=target)
+
+
+def bf_to_shared(bf_code: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+    bf_to_asm_file(bf_code, asm_path, target=target)
     asm_to_shared = ["cc", "-shared", "-o", output_path, asm_path]
     process = subprocess.run(asm_to_shared, capture_output=True)
     stdout = process.stdout.decode(errors='replace')
@@ -38,3 +42,10 @@ def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, targe
             warn(stderr, RuntimeWarning)
         else:
             raise RuntimeError(stderr)
+
+
+def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+    with open(input_path) as input_file:
+        bf_code = input_file.read()
+
+    bf_to_shared(bf_code, asm_path, output_path, target=target)
