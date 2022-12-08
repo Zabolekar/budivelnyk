@@ -21,11 +21,11 @@ Supported targets currently are:
 
 ## Requirements
 
-The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and GCC. We also use mypy for typechecking.
+The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking.
 
 ## Installation
 
-1. Make sure that you have git, GCC and Python 3.10 installed.
+1. Make sure that you have git and Python 3.10 installed, and that the command `cc` calls either GCC or Clang.
 2. Clone the repository with `git clone https://github.com/Zabolekar/budivelnyk/` and switch into the folder with `cd budivelnyk`.
 3. Create an environment, activate it and install pytest and budivelnyk itself. There are many ways to do that, the simplest is the following:
 
@@ -71,7 +71,7 @@ from budivelnyk import bf_file_to_asm_file, Target
 bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
 ```
 
-The produced asm code can be manually assembled and linked to a shared library (currently only tested with GCC). You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
+The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
 
 ```python
 from budivelnyk import bf_file_to_shared
