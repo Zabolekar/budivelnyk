@@ -6,6 +6,7 @@ from __future__ import annotations
 import enum
 import subprocess
 import platform
+from warnings import warn
 from typing import Iterator
 
 from .intermediate import AST, bf_to_intermediate
@@ -74,5 +75,13 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
 def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
     bf_file_to_asm_file(input_path, asm_path, target=target)
     asm_to_shared = ["cc", "-shared", "-o", output_path, asm_path]
-    subprocess.run(asm_to_shared).check_returncode()
-
+    process = subprocess.run(asm_to_shared, capture_output=True)
+    stdout = process.stdout.decode(errors='replace')
+    stderr = process.stderr.decode(errors='replace')
+    if stdout:
+        print(stdout)
+    if stderr:
+        if process.returncode == 0:
+            warn(stderr, RuntimeWarning)
+        else:
+            raise RuntimeError(stderr)
