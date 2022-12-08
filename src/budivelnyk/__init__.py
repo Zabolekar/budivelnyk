@@ -35,12 +35,12 @@ class Target(enum.Enum):
                 return (Target.RISCV64,)
             else:
                 raise RuntimeError(f"Linux on {machine} is not supported")
-        elif system == "NetBSD":
+        elif system in ("NetBSD", "OpenBSD"):
             processor = platform.processor()
             if processor == "aarch64":
                 return (Target.ARM64,)
             else:
-                raise RuntimeError(f"NetBSD on {processor} is not supported")
+                raise RuntimeError(f"{system} on {processor} is not supported")
         else:
             raise RuntimeError(f"unsupported or unknown OS: {system}")
         
