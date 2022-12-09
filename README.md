@@ -13,11 +13,11 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 ## Supported Targets
 
 Supported targets currently are:
-- Linux on x86_64 (Intel syntax)
-- Linux on x86_64 (AT&T syntax)
-- NetBSD on ARM64
-- OpenBSD on ARM64
-- Linux on RISCV64
+
+- `X86_64_INTEL`: Linux on x86_64 aka AMD64 (Intel syntax).
+- `X86_64_ATT`: Linux on x86_64 aka AMD64 (AT&T syntax).
+- `ARM64`: NetBSD and OpenBSD on ARM64 aka AArch64.
+- `RISCV64`: Linux on 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
 
 ## Requirements
 
