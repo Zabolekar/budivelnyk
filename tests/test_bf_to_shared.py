@@ -3,18 +3,23 @@ from os import path
 from ctypes import CDLL, create_string_buffer
 from subprocess import run, Popen, PIPE
 import pytest
-from budivelnyk import bf_file_to_shared, Target
+from budivelnyk import bf_to_shared, bf_file_to_shared, Target
 
 
 targets = Target.candidates()
 
 
+def generate_paths(tmp_path, name):
+    asm = path.join(tmp_path, f"{name}.s")
+    library = path.join(tmp_path, f"lib{name}.so")
+    return asm, library
+
+
 @pytest.mark.parametrize("target", targets)
-def test_inc(target, tmp_path):
-    bf = "tests/bf/increment_string.bf"
-    asm = path.join(tmp_path, "inc.s")
-    library = path.join(tmp_path, "libinc.so")
-    bf_file_to_shared(bf, asm, library, target=target)
+def test_increment_string(target, tmp_path):
+    bf = "[+>]"
+    asm, library = generate_paths(tmp_path, "inc")
+    bf_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
     buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ", 16)
@@ -24,10 +29,9 @@ def test_inc(target, tmp_path):
 
 @pytest.mark.parametrize("target", targets)
 def test_zero_minus_one(target, tmp_path):
-    bf = "tests/bf/zero_minus_one.bf"
-    asm = path.join(tmp_path, "zmo.s")
-    library = path.join(tmp_path, "libzmo.so")
-    bf_file_to_shared(bf, asm, library, target=target)
+    bf = "[-]-"
+    asm, library = generate_paths(tmp_path, "zmo")
+    bf_to_shared(bf, asm, library, target=target)
 
     libzmo = CDLL(library)
     a = create_string_buffer(b"\x00", 1)
@@ -43,10 +47,9 @@ def test_zero_minus_one(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_hello(target, tmp_path):
+def test_print_hello(target, tmp_path):
     bf = "tests/bf/hello.bf"
-    asm = path.join(tmp_path, "hello.s")
-    library = path.join(tmp_path, "libhello.so")
+    asm, library = generate_paths(tmp_path, "hello")
     bf_file_to_shared(bf, asm, library, target=target)
 
     call_hello = [sys.executable, "tests/py/call_hello.py", library]
@@ -57,10 +60,9 @@ def test_hello(target, tmp_path):
 
 @pytest.mark.parametrize("target", targets)
 def test_echo(target, tmp_path):
-    bf = "tests/bf/echo.bf"
-    asm = path.join(tmp_path, "echo.s")
-    library = path.join(tmp_path, "libecho.so")
-    bf_file_to_shared(bf, asm, library, target=target)
+    bf = "+[,.]"
+    asm, library = generate_paths(tmp_path, "echo")
+    bf_to_shared(bf, asm, library, target=target)
 
     call_echo = [sys.executable, "tests/py/call_echo.py", library]
     with Popen(call_echo, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
@@ -71,10 +73,9 @@ def test_echo(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_fibs(target, tmp_path):
+def test_composable_fibs(target, tmp_path):
     bf = "tests/bf/fibs.bf"
-    asm = path.join(tmp_path, "fibs.s")
-    library = path.join(tmp_path, "libfibs.so")
+    asm, library = generate_paths(tmp_path, "fibs")
     bf_file_to_shared(bf, asm, library, target=target)
 
     libfibs = CDLL(library)
@@ -92,10 +93,9 @@ def test_fibs(target, tmp_path):
 
 @pytest.mark.parametrize("target", targets)
 def test_consecutive_reads(target, tmp_path):
-    bf = "tests/bf/reads.bf"
-    asm = path.join(tmp_path, "reads.s")
-    library = path.join(tmp_path, "libreads.so")
-    bf_file_to_shared(bf, asm, library, target=target)
+    bf = ",,,"
+    asm, library = generate_paths(tmp_path, "reads")
+    bf_to_shared(bf, asm, library, target=target)
 
     call_reads = [sys.executable, "tests/py/call_reads.py", library]
     with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:

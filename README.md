@@ -13,18 +13,19 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 ## Supported Targets
 
 Supported targets currently are:
-- Linux on x86_64 (Intel syntax)
-- Linux on x86_64 (AT&T syntax)
-- NetBSD on ARM64
-- Linux on RISCV64
+
+- `X86_64_INTEL`: Linux on x86_64 aka AMD64 (Intel syntax).
+- `X86_64_ATT`: Linux on x86_64 aka AMD64 (AT&T syntax).
+- `ARM64`: NetBSD and OpenBSD on ARM64 aka AArch64.
+- `RISCV64`: Linux on 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
 
 ## Requirements
 
-The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and GCC. We also use mypy for typechecking.
+The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking.
 
 ## Installation
 
-1. Make sure that you have git, GCC and Python 3.10 installed.
+1. Make sure that you have git and Python 3.10 installed, and that the command `cc` calls either GCC or Clang.
 2. Clone the repository with `git clone https://github.com/Zabolekar/budivelnyk/` and switch into the folder with `cd budivelnyk`.
 3. Create an environment, activate it and install pytest and budivelnyk itself. There are many ways to do that, the simplest is the following:
 
@@ -44,7 +45,7 @@ Be aware that the tests that require executing machine code are only performed f
 Example usage:
 
 ```pycon
->>> from budivelnyk import bf_to_asm
+>>> from budivelnyk import bf_to_asm, Target
 >>> asm = bf_to_asm("+++>--", target=Target.X86_64_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
@@ -70,7 +71,7 @@ from budivelnyk import bf_file_to_asm_file, Target
 bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
 ```
 
-The produced asm code can be manually assembled and linked to a shared library (currently only tested with GCC). You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
+The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
 
 ```python
 from budivelnyk import bf_file_to_shared
