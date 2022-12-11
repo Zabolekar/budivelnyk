@@ -12,16 +12,19 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 
 ## Supported Targets
 
-Supported targets currently are:
+Supported targets currently are, in alphabetical order:
 
-- `X86_64_INTEL`: Linux on x86_64 aka AMD64 (Intel syntax).
-- `X86_64_ATT`: Linux on x86_64 aka AMD64 (AT&T syntax).
-- `ARM64`: NetBSD and OpenBSD on ARM64 aka AArch64.
+- `ARM32`: Linux on 32-bit ARM. **Work in progress**
+- `ARM64`: NetBSD and OpenBSD on 64-bit ARM aka AArch64.
 - `RISCV64`: Linux on 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
+- `X86_64_ATT`: Linux on x86_64 aka AMD64 (AT&T syntax).
+- `X86_64_INTEL`: Linux on x86_64 aka AMD64 (Intel syntax).
+
+The only supported assemblers, even for x86_64 code in Intel syntax, are GAS and the LLVM assembler.
 
 ## Requirements
 
-The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking.
+The compiler itself only requires Python 3.10 to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking, but it's only required for developing the compiler, not for using it.
 
 ## Installation
 
