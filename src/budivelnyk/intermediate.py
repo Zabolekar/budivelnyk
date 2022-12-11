@@ -48,7 +48,7 @@ class Loop(Node):
 AST: TypeAlias = list[Node]
 
 def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> Iterable[Node]:
-    for (_, g) in groupby(bf_ast, lambda node: type(node)):
+    for (_, g) in groupby(bf_ast, type):
         group = list(g)
         count = len(group)
         specimen = group[0]
