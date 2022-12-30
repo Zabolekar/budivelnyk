@@ -66,5 +66,4 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
 
 def _generate_epilogue() -> Iterator[str]:
     yield  '    pop    {r4, pc}'
-    yield  '    bx     lr'
 
