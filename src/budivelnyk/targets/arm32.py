@@ -5,15 +5,18 @@ from ..intermediate import (
     Add, Subtract, Forward, Back, Output, Input
 )
 
-def generate_arm32(intermediate: list[Node]) -> Iterator[str]:
-    yield from _generate_prologue()
-    yield from _generate_body(intermediate)
+def generate_arm32(intermediate: list[Node], *, thumb: bool) -> Iterator[str]:
+    yield from _generate_prologue(thumb=thumb)
+    yield from _generate_body(intermediate, thumb=thumb)
     yield from _generate_epilogue()
 
 
-def _generate_prologue() -> Iterator[str]:
+def _generate_prologue(*, thumb) -> Iterator[str]:
     yield '    .arch armv7-a'
-    yield '    .thumb'
+    if thumb:
+        yield '    .thumb'
+    else:
+        yield '    .arm'
     yield '    .syntax unified'
     yield ''
     yield '    .align 1'
@@ -22,7 +25,7 @@ def _generate_prologue() -> Iterator[str]:
     yield 'run:'
     yield  '    push   {r4, lr}'  # r4 is the first callee-saved register
 
-def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
+def _generate_body(intermediate: list[Node], parent_label: str='', *, thumb) -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
         match node:
@@ -57,8 +60,12 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
                 label = f'{parent_label}_{loop_id}'
                 yield f'start{label}:'
                 yield  '    ldrb   r1, [r0]'
-                yield f'    cbz    r1, end{label}'
-                yield from _generate_body(body, label)
+                if thumb:
+                    yield f'    cbz    r1, end{label}'
+                else:
+                    yield f'    cmp    r1, 0'
+                    yield f'    beq    end{label}'
+                yield from _generate_body(body, label, thumb=thumb)
                 yield f'    b      start{label}'
                 yield f'end{label}:'
                 loop_id += 1
