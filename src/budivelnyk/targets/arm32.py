@@ -15,6 +15,7 @@ def _generate_prologue() -> Iterator[str]:
     yield '    .arch armv7-a'
     yield '    .thumb'
     yield '    .syntax unified'
+    yield ''
     yield '    .align 1'
     yield '    .globl run'
     yield '    .type run, %function'
@@ -45,10 +46,13 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
             case Input(n):
                 yield  '    mov    r4, r0'
                 yield from ['    bl     getchar'] * n
-                yield  '    bic    r0, r0, r0, asr #31'
-                yield  '    and    r0, r0, #255'
-                yield  '    strb   r0, [r4]'
+                yield  '    cmp    r0, #0'
+                yield  '    ite    ge'
+                yield  '    movge  r1, r0'
+                yield  '    movlt  r1, #0'
                 yield  '    mov    r0, r4'
+                yield  '    strb   r1, [r0]'
+
             case Loop(body):
                 label = f'{parent_label}_{loop_id}'
                 yield f'start{label}:'
