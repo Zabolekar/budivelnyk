@@ -10,17 +10,26 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 - Leaving tape boundaries may or may not cause segmentation fault.
 - Reading EOF with `,` saves 0 into the current cell.
 
+Note: this bf variant is *not* Turing complete. For that, you'd need either unbounded tape or unbounded cells.
+
 ## Supported Targets
 
-Supported targets currently are, in alphabetical order:
+Supported targets are, in alphabetical order:
 
-- `ARM32`: Linux on 32-bit ARM. 
-- `ARM64`: NetBSD and OpenBSD on 64-bit ARM aka AArch64.
-- `RISCV64`: Linux on 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
-- `X86_64_ATT`: Linux on x86_64 aka AMD64 (AT&T syntax).
-- `X86_64_INTEL`: Linux on x86_64 aka AMD64 (Intel syntax).
+- `ARM32`: 32-bit ARM, A32 instruction set.
+  - Tested on: Linux.
+- `ARM32_THUMB`: 32-bit ARM, T32 instruction set aka Thumb-2.
+  - Tested on: Linux.
+- `ARM64`: 64-bit ARM aka AArch64.
+  - Tested on: NetBSD, OpenBSD.
+- `RISCV64`: 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
+  - Tested on: Linux.
+- `X86_64_ATT`: x86_64 aka AMD64 (AT&T syntax).
+  - Tested on: Linux.
+- `X86_64_INTEL`: x86_64 aka AMD64 (Intel syntax).
+  - Tested on: Linux.
 
-The only supported assemblers, even for x86_64 code in Intel syntax, are GAS and the LLVM assembler.
+Supported assemblers are GAS and the LLVM assembler.
 
 ## Requirements
 
@@ -82,7 +91,7 @@ from budivelnyk import bf_file_to_shared
 bf_file_to_shared("input.bf", "output.s", "liboutput.so")
 ```
 
-Currently, the compiler always generates exactly one function named `run` that you can use as if its definition were `void run(char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.
+The compiler always generates exactly one function named `run` that you can use as if its definition were `void run(char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.
 
 Memory for the tape has to be allocated by the caller. This has the following advantages:
 - If you know in advance that your code only requires a few bytes to run, you don't have to allocate a large tape.
