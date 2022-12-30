@@ -20,7 +20,7 @@ def _generate_prologue() -> Iterator[str]:
     yield 'run:'
     yield '    stp    x29, x30, [sp, -32]!'
     yield '    mov    x29, sp'
-    yield '    str    x19, [sp, 16]'
+    yield '    str    x19, [sp, 16]'  # x19 is the first callee-saved register
 
 def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
     loop_id = 0

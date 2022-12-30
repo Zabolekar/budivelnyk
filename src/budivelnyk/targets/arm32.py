@@ -20,7 +20,7 @@ def _generate_prologue() -> Iterator[str]:
     yield '    .globl run'
     yield '    .type run, %function'
     yield 'run:'
-    yield  '    push   {r4, lr}'
+    yield  '    push   {r4, lr}'  # r4 is the first callee-saved register
 
 def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
     loop_id = 0
