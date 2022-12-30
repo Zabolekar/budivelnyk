@@ -28,16 +28,16 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
         match node:
             case Add(n):
                 yield  '    ldrb   r1, [r0]'
-                yield f'    add    r1, r1, #{n}'
+                yield f'    add    r1, r1, {n}'
                 yield  '    strb   r1, [r0]'
             case Subtract(n):
                 yield  '    ldrb   r1, [r0]'
-                yield f'    sub    r1, r1, #{n}'
+                yield f'    sub    r1, r1, {n}'
                 yield  '    strb   r1, [r0]'
             case Forward(n):
-                yield f'    add    r0, r0, #{n}'
+                yield f'    add    r0, r0, {n}'
             case Back(n):
-                yield f'    sub    r0, r0, #{n}'
+                yield f'    sub    r0, r0, {n}'
             case Output(n):
                 yield  '    mov    r4, r0'
                 yield  '    ldrb   r0, [r0]'
@@ -46,10 +46,10 @@ def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[s
             case Input(n):
                 yield  '    mov    r4, r0'
                 yield from ['    bl     getchar'] * n
-                yield  '    cmp    r0, #0'
+                yield  '    cmp    r0, 0'
                 yield  '    ite    ge'
                 yield  '    movge  r1, r0'
-                yield  '    movlt  r1, #0'
+                yield  '    movlt  r1, 0'
                 yield  '    mov    r0, r4'
                 yield  '    strb   r1, [r0]'
 
