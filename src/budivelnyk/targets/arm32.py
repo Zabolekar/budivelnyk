@@ -11,7 +11,7 @@ def generate_arm32(intermediate: list[Node], *, thumb: bool) -> Iterator[str]:
     yield from _generate_epilogue()
 
 
-def _generate_prologue(*, thumb) -> Iterator[str]:
+def _generate_prologue(*, thumb: bool) -> Iterator[str]:
     yield '    .arch armv7-a'
     if thumb:
         yield '    .thumb'
@@ -25,7 +25,7 @@ def _generate_prologue(*, thumb) -> Iterator[str]:
     yield 'run:'
     yield  '    push   {r4, lr}'  # r4 is the first callee-saved register
 
-def _generate_body(intermediate: list[Node], parent_label: str='', *, thumb) -> Iterator[str]:
+def _generate_body(intermediate: list[Node], parent_label: str='', *, thumb: bool) -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
         match node:
