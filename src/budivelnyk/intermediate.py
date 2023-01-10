@@ -10,6 +10,8 @@ class Node:
     """ Abstract syntax tree node. """
     pass
 
+AST: TypeAlias = list[Node]
+
 @dataclass
 class Add(Node):
     """ Add constant to current cell's value. """
@@ -43,9 +45,8 @@ class Input(Node):
 @dataclass
 class Loop(Node):
     """ [] """
-    body: list[Node]
+    body: AST
 
-AST: TypeAlias = list[Node]
 
 def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> Iterable[Node]:
     for (_, g) in groupby(bf_ast, type):

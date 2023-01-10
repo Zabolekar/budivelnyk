@@ -1,11 +1,11 @@
 from typing import Iterator
 
 from ..intermediate import (
-    Node, Loop,
+    AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
 
-def generate_arm32(intermediate: list[Node], *, thumb: bool) -> Iterator[str]:
+def generate_arm32(intermediate: AST, *, thumb: bool) -> Iterator[str]:
     yield from _generate_prologue(thumb=thumb)
     yield from _generate_body(intermediate, thumb=thumb)
     yield from _generate_epilogue()
@@ -25,7 +25,7 @@ def _generate_prologue(*, thumb: bool) -> Iterator[str]:
     yield 'run:'
     yield  '    push   {r4, lr}'  # r4 is the first callee-saved register
 
-def _generate_body(intermediate: list[Node], parent_label: str='', *, thumb: bool) -> Iterator[str]:
+def _generate_body(intermediate: AST, parent_label: str='', *, thumb: bool) -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
         match node:

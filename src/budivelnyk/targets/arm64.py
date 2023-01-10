@@ -1,11 +1,11 @@
 from typing import Iterator
 
 from ..intermediate import (
-    Node, Loop,
+    AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
 
-def generate_arm64(intermediate: list[Node]) -> Iterator[str]:
+def generate_arm64(intermediate: AST) -> Iterator[str]:
     yield from _generate_prologue()
     yield from _generate_body(intermediate)
     yield from _generate_epilogue()
@@ -22,7 +22,7 @@ def _generate_prologue() -> Iterator[str]:
     yield '    mov    x29, sp'
     yield '    str    x19, [sp, 16]'  # x19 is the first callee-saved register
 
-def _generate_body(intermediate: list[Node], parent_label: str='') -> Iterator[str]:
+def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
         match node:

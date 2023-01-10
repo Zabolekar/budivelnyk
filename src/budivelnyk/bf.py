@@ -7,6 +7,8 @@ class Node:
     """ Bf command """
     pass
 
+AST: TypeAlias = list[Node]
+
 class Inc(Node):
     """ + """
     pass
@@ -34,10 +36,7 @@ class Input(Node):
 @dataclass
 class Loop(Node):
     """ [] """
-    body: list[Node]
-
-
-AST: TypeAlias = list[Node]
+    body: AST
 
 
 @dataclass
