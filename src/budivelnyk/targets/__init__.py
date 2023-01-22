@@ -28,8 +28,10 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
 
 def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
     match processor:
-        case "aarch64":
+        case "aarch64":  # only tested with Net and Open
             return (Target.ARM64,)
+        case "amd64":  # only tested with Free
+            return (Target.X86_64_INTEL, Target.X86_64_ATT)
         case _:
             raise RuntimeError(f"{system} on {processor} is not supported")
 
@@ -48,7 +50,7 @@ class Target(enum.Enum):
         match system:
             case "Linux":
                 return _linux_candidates(platform.machine())
-            case "NetBSD" | "OpenBSD":
+            case "NetBSD" | "OpenBSD" | "FreeBSD":
                 return _bsd_candidates(system, platform.processor())
             case _:
                 raise RuntimeError(f"unsupported or unknown OS: {system}")

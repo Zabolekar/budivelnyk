@@ -25,9 +25,9 @@ Supported targets are, in alphabetical order:
 - `RISCV64`: 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
   - Tested on: Linux.
 - `X86_64_ATT`: x86_64 aka AMD64 (AT&T syntax).
-  - Tested on: Linux.
+  - Tested on: Linux, FreeBSD.
 - `X86_64_INTEL`: x86_64 aka AMD64 (Intel syntax).
-  - Tested on: Linux.
+  - Tested on: Linux, FreeBSD.
 
 Supported assemblers are GAS and the LLVM assembler.
 
