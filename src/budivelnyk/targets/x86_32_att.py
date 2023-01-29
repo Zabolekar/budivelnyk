@@ -49,13 +49,14 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    subl   ${n}, %eax'
             case Output(n):
                 yield  '    pushl  %eax'
-                yield  '    pushl  (%eax)'
+                yield  '    movzbl (%eax), %ecx'
+                yield  '    pushl  %ecx'
                 sequence = [
                        '    call   putchar@PLT',
                        '    movl   %eax, (%esp)'
                 ] * n
                 yield from sequence[:-1]
-                yield  '    popl   %eax'
+                yield  '    addl   $4, %esp'
                 yield  '    popl   %eax'
             case Input(n):
                 raise NotImplementedError
