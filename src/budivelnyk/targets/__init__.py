@@ -7,6 +7,8 @@ from ..intermediate import AST
 from .arm32 import generate_arm32
 from .arm64 import generate_arm64
 from .riscv64 import generate_riscv64
+from .x86_32_att import generate_x86_32_att
+from .x86_32_intel import generate_x86_32_intel
 from .x86_64_att import generate_x86_64_att
 from .x86_64_intel import generate_x86_64_intel
 
@@ -74,6 +76,10 @@ class Target(enum.Enum):
                 yield from generate_arm64(intermediate)
             case Target.RISCV64:
                 yield from generate_riscv64(intermediate)
+            case Target.X86_32_ATT:
+                yield from generate_x86_32_att(intermediate)
+            case Target.X86_32_INTEL:
+                yield from generate_x86_32_intel(intermediate)
             case Target.X86_64_ATT:
                 yield from generate_x86_64_att(intermediate)
             case Target.X86_64_INTEL:
