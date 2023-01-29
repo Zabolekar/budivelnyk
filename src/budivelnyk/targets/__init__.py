@@ -32,6 +32,8 @@ def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
             return (Target.ARM64,)
         case "amd64":  # only tested with Free
             return (Target.X86_64_INTEL, Target.X86_64_ATT)
+        case "i386":  # only tested with Open
+            return (Target.X86_32_INTEL, Target.X86_32_ATT)
         case _:
             raise RuntimeError(f"{system} on {processor} is not supported")
 
@@ -41,6 +43,8 @@ class Target(enum.Enum):
     ARM32_THUMB = enum.auto()
     ARM64 = enum.auto()
     RISCV64 = enum.auto()
+    X86_32_ATT = enum.auto()
+    X86_32_INTEL = enum.auto()
     X86_64_ATT = enum.auto()
     X86_64_INTEL = enum.auto()
 
