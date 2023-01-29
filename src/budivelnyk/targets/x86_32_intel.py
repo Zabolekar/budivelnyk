@@ -15,10 +15,17 @@ def generate_x86_32_intel(intermediate: AST) -> Iterator[str]:
 def _generate_prologue() -> Iterator[str]:
     yield '    .intel_syntax noprefix'
     yield ''
+    yield 'get_pc:'
+    yield '    mov   ebx, dword ptr [esp]'
+    yield '    ret'
+    yield ''
     yield '    .globl run'
     yield '    .type run, @function'
     yield 'run:'
-    yield '    mov   eax, [esp + 4]'
+    yield '    push  ebx'
+    yield '    call  get_pc'
+    yield '    add   ebx, offset _GLOBAL_OFFSET_TABLE_'
+    yield '    mov   eax, dword ptr [esp + 8]'
 
 
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
@@ -42,7 +49,15 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
             case Back(n):
                 yield f'    sub   eax, {n}'
             case Output(n):
-                raise NotImplementedError
+                yield  '    push  eax'
+                yield  '    push  dword ptr [eax]'
+                sequence = [
+                       '    call  putchar@PLT',
+                       '    mov   dword ptr [esp], eax'
+                ] * n
+                yield from sequence[:-1]
+                yield  '    pop   eax'
+                yield  '    pop   eax'
             case Input(n):
                 raise NotImplementedError
             case Loop(body):
@@ -57,5 +72,6 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
 
 
 def _generate_epilogue() -> Iterator[str]:
+    yield '    pop   ebx'
     yield '    ret'
 

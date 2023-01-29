@@ -13,10 +13,18 @@ def generate_x86_32_att(intermediate: AST) -> Iterator[str]:
 
 
 def _generate_prologue() -> Iterator[str]:
+    yield 'get_pc:'
+    yield '    movl   (%esp), %ebx'
+    yield '    ret'
+    yield ''
     yield '    .globl run'
     yield '    .type run, @function'
     yield 'run:'
-    yield '    movl   4(%esp), %eax'
+    yield '    pushl  %ebx'
+    yield '    call   get_pc'
+    yield '    addl   $_GLOBAL_OFFSET_TABLE_, %ebx'
+    yield '    movl   8(%esp), %eax'
+
 
 
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
@@ -40,7 +48,15 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
             case Back(n):
                 yield f'    subl   ${n}, %eax'
             case Output(n):
-                raise NotImplementedError
+                yield  '    pushl  %eax'
+                yield  '    pushl  (%eax)'
+                sequence = [
+                       '    call   putchar@PLT',
+                       '    movl   %eax, (%esp)'
+                ] * n
+                yield from sequence[:-1]
+                yield  '    popl   %eax'
+                yield  '    popl   %eax'
             case Input(n):
                 raise NotImplementedError
             case Loop(body):
@@ -55,5 +71,6 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
 
 
 def _generate_epilogue() -> Iterator[str]:
+    yield '    popl   %ebx'
     yield '    ret'
 
