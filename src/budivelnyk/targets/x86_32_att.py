@@ -59,7 +59,18 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield  '    addl   $4, %esp'
                 yield  '    popl   %eax'
             case Input(n):
-                raise NotImplementedError
+                yield  '    pushl  %eax'
+                yield  '    subl   $4, %esp'
+                yield from ['    call getchar@PLT'] * n
+                # EOF handling: replace -1 with 0
+                yield  '    xorl   %ecx, %ecx'
+                yield  '    testl  %eax, %eax'
+                yield  '    setns  %cl'
+                yield  '    negl   %ecx'
+                yield  '    andl   %eax, %ecx'
+                yield  '    addl   $4, %esp'
+                yield  '    popl   %eax'
+                yield  '    movb   %cl, (%eax)'
             case Loop(body):
                 label = f'{parent_label}_{loop_id}'
                 yield f'start{label}:'
