@@ -22,11 +22,11 @@ Supported targets are, in alphabetical order:
   - Tested on: Linux.
 - `ARM64`: 64-bit ARM aka AArch64.
   - Tested on: NetBSD, OpenBSD.
-- `RISCV64`: 64-bit RISC-V. More precisely, we test it on a RV64GCV machine. In theory, the generated asm should run on RV64I without any extensions. In practice, we've never checked whether it does.
+- `RISCV64`: 64-bit RISC-V. In theory, the generated asm should run on RV64I without any extensions. In practice, we've only tested it on a RV64GCV machine.
   - Tested on: Linux.
-- `X86_32_ATT`: 32-bit x86 aka i386 (AT&T syntax).
+- `X86_32_ATT`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax).
   - Tested on: OpenBSD.
-- `X86_32_INTEL`: 32-bit x86 aka i386 (Intel syntax).
+- `X86_32_INTEL`: IA-32 aka i386 aka 32-bit x86 (Intel syntax).
   - Tested on: OpenBSD.
 - `X86_64_ATT`: x86_64 aka AMD64 (AT&T syntax).
   - Tested on: Linux, FreeBSD.
