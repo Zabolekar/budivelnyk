@@ -6,3 +6,5 @@
 *.code-workspace
 env
 roadmap.txt
+*.swp
+

@@ -47,10 +47,11 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
             case Input(n):
                 yield '    pushq  %rdi'
                 yield from ['    call   getchar'] * n
+                yield '    popq   %rdi'
+                # EOF handling: replace -1 with 0
                 yield '    xorl   %edx, %edx'
                 yield '    testl  %eax, %eax'
                 yield '    cmovs  %edx, %eax'
-                yield '    popq   %rdi'
                 yield '    movb   %al, (%rdi)'
             case Loop(body):
                 label = f'{parent_label}_{loop_id}'
