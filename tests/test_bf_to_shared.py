@@ -22,7 +22,7 @@ def test_increment_string(target, tmp_path):
     bf_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
-    buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ", 16)
+    buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ")
     libinc.run(buffer)
     assert bytes(buffer) == b"Hello, assembly!"
 
