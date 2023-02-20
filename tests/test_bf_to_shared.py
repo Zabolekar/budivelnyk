@@ -1,6 +1,6 @@
 import sys
 from os import path
-from ctypes import CDLL, create_string_buffer
+from ctypes import CDLL
 from subprocess import run, Popen, PIPE
 import pytest
 from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
@@ -22,9 +22,9 @@ def test_increment_string(target, tmp_path):
     bf_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
-    buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ")
+    buffer = create_tape(b"Gdkkn+\x1f`rrdlakx \x00")
     libinc.run(buffer)
-    assert bytes(buffer) == b"Hello, assembly!"
+    assert bytes(buffer) == b"Hello, assembly!\x00"
 
 
 @pytest.mark.parametrize("target", targets)
@@ -34,14 +34,14 @@ def test_zero_minus_one(target, tmp_path):
     bf_to_shared(bf, asm, library, target=target)
 
     libzmo = CDLL(library)
-    a = create_string_buffer(b"\x00", 1)
-    b = create_string_buffer(b" ", 1)
-    c = create_string_buffer(b"2", 1)
+    a = create_tape(b"\x00")
+    b = create_tape(b" ")
+    c = create_tape(b"2")
     libzmo.run(a)
     libzmo.run(b)
     libzmo.run(c)
-    assert bytes(a) == bytes(b) == bytes(c) == b"\xff"
-    d = create_string_buffer(b"1234", 4)
+    assert a[:] == b[:] == c[:] == [255]
+    d = create_tape(b"1234")
     libzmo.run(d)
     assert bytes(d) == b"\xff234"
 
