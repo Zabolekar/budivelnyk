@@ -3,7 +3,7 @@ from os import path
 from ctypes import CDLL, create_string_buffer
 from subprocess import run, Popen, PIPE
 import pytest
-from budivelnyk import bf_to_shared, bf_file_to_shared, Target
+from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
 
 
 targets = Target.candidates()
@@ -79,13 +79,11 @@ def test_composable_fibs(target, tmp_path):
     bf_file_to_shared(bf, asm, library, target=target)
 
     libfibs = CDLL(library)
-    buffer = create_string_buffer(bytes([0, 1, 0, 0]), 4)
+    buffer = create_tape(bytes([0, 1, 0, 0]))
     fibs = []
     for i in range(14):
         libfibs.run(buffer)
-        # for some reason, subscript operator of a ctypes char array returns a bytes object of length 1:
-        element = buffer[0]
-        [byte] = element
+        byte = buffer[0]
         fibs.append(byte)
     # 121 because the cell overflows:
     assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
