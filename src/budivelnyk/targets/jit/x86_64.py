@@ -41,24 +41,24 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
             case Back(n):
                 yield b"\x48\x83\xef%c" % n  # sub rdi, n
             case Output(n):
-                yield b"\x57"               # push rdi
-                yield b"\x48\x0f\xb6\x3f"   # movzx rdi, byte ptr [rdi]
+                yield (b"\x57"               # push rdi
+                       b"\x48\x0f\xb6\x3f")  # movzx rdi, byte ptr [rdi]
                 sequence = [
-                    b"\x41\xff\xd4",        # call r12 (see prologue)
-                    b"\x48\x89\xc7"         # mov rdi, rax
+                    b"\x41\xff\xd4"          # call r12 (see prologue)
+                    b"\x48\x89\xc7"          # mov rdi, rax
                 ] * n
                 yield from sequence[:-1]
-                yield b"\x5f"               # pop rdi
+                yield b"\x5f"                # pop rdi
             case Input(n):
-                yield b"\x57"               # push   rdi
+                yield b"\x57"                # push   rdi
                 yield from [
-                    b"\x41\xff\xd5"         # call r13 (see prologue)
+                    b"\x41\xff\xd5"          # call r13 (see prologue)
                 ] * n
-                yield b"\x5f"               # pop rdi
-                yield b"\x31\xd2"           # xor edx, edx
-                yield b"\x85\xc0"           # test eax, eax
-                yield b"\x0f\x48\xc2"       # cmovs eax, edx
-                yield b"\x88\x07"           # mov byte ptr [rdi], al
+                yield (b"\x5f"               # pop rdi
+                       b"\x31\xd2"           # xor edx, edx
+                       b"\x85\xc0"           # test eax, eax
+                       b"\x0f\x48\xc2"       # cmovs eax, edx
+                       b"\x88\x07")          # mov byte ptr [rdi], al
             case Loop(body):
                 # TODO: this only supports short jumps, that is, [-128..127]
                 compiled_body = b"".join(_generate_body(body))
@@ -77,5 +77,5 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
 
 def _generate_epilogue() -> bytes:
     return (b"\x41\x5d"  # pop r13
-          + b"\x41\x5c"  # pop r12
-          + b"\xc3")     # ret
+            b"\x41\x5c"  # pop r12
+            b"\xc3")     # ret
