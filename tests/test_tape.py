@@ -37,7 +37,7 @@ def test_jit_with_bytes():
     with pytest.raises(ctypes.ArgumentError):
         f(tape)
     with pytest.raises(TypeError, match="not writable"):
-        f(bd.as_tape(tape))
+        f(bd.as_tape(tape, size=1))
     f(bd.create_tape(tape))
 
 
@@ -54,7 +54,7 @@ def test_jit_with_c_bytes():
     assert tape._type_ is ctypes.c_byte
     with pytest.raises(ctypes.ArgumentError):
         f(tape)
-    f(bd.as_tape(tape))
+    f(bd.as_tape(tape, size=1))
 
 
 def test_dll_with_chars(nop_dll):
@@ -71,4 +71,4 @@ def test_jit_with_chars():
     assert tape._type_ is ctypes.c_char
     with pytest.raises(ctypes.ArgumentError):
         f(tape)
-    f(bd.as_tape(tape))
+    f(bd.as_tape(tape, size=1))

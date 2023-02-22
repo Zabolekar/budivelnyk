@@ -1,9 +1,11 @@
 import ctypes
 from typing import TypeAlias
 
+
 Tape: TypeAlias = ctypes.Array[ctypes.c_ubyte]
 
-def create_tape(cells: int | bytes) -> Tape: # TODO: document
+
+def create_tape(cells: int | bytes) -> Tape:
     if isinstance(cells, int):
         size = cells
         return (ctypes.c_ubyte * size)()
@@ -12,6 +14,7 @@ def create_tape(cells: int | bytes) -> Tape: # TODO: document
         return (ctypes.c_ubyte * size).from_buffer_copy(cells)
 
 
-def as_tape(cells) -> Tape:  # type: ignore
-    size = len(cells)
-    return (ctypes.c_ubyte * size).from_buffer(cells)
+def as_tape(buffer, size=None) -> Tape:  # type: ignore
+    if size is None:
+        size = len(buffer)
+    return (ctypes.c_ubyte * size).from_buffer(buffer)
