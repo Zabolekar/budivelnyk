@@ -35,11 +35,11 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
             case Forward(1):
                 yield b"\x48\xff\xc7"        # inc rdi
             case Forward(n):
-                yield b"\x48\x83\xc7%c" % n  # add rdi, n
+                yield b"\x48\x83\xc7%c" % n  # add rdi, n  TODO: large n
             case Back(1):
                 yield b"\x48\xff\xcf"        # dec rdi
             case Back(n):
-                yield b"\x48\x83\xef%c" % n  # sub rdi, n
+                yield b"\x48\x83\xef%c" % n  # sub rdi, n  TODO: large n
             case Output(n):
                 yield (b"\x57"               # push rdi
                        b"\x48\x0f\xb6\x3f")  # movzx rdi, byte ptr [rdi]
