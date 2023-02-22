@@ -6,7 +6,7 @@ import subprocess
 from warnings import warn
 from typing import Callable, Iterator
 
-from .tape import Tape, create_tape
+from .tape import Tape, create_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
 from .targets.jit import intermediate_to_function

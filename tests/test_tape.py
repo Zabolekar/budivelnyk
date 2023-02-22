@@ -31,11 +31,14 @@ def test_dll_with_bytes(nop_dll):
     f(tape)
 
 
-@pytest.mark.xfail(raises=ctypes.ArgumentError)  # TODO
 def test_jit_with_bytes():
     f = bd.bf_to_function("")
     tape = b"\x00"
-    f(tape)
+    with pytest.raises(ctypes.ArgumentError):
+        f(tape)
+    with pytest.raises(TypeError, match="not writable"):
+        f(bd.as_tape(tape))
+    f(bd.create_tape(tape))
 
 
 def test_dll_with_c_bytes(nop_dll):
@@ -45,12 +48,13 @@ def test_dll_with_c_bytes(nop_dll):
     f(tape)
 
 
-@pytest.mark.xfail(raises=ctypes.ArgumentError)
 def test_jit_with_c_bytes():
     f = bd.bf_to_function("")
     tape = (ctypes.c_byte * 1)()
     assert tape._type_ is ctypes.c_byte
-    f(tape)
+    with pytest.raises(ctypes.ArgumentError):
+        f(tape)
+    f(bd.as_tape(tape))
 
 
 def test_dll_with_chars(nop_dll):
@@ -60,10 +64,11 @@ def test_dll_with_chars(nop_dll):
     f(tape)
 
 
-@pytest.mark.xfail(raises=ctypes.ArgumentError)
 def test_jit_with_chars():
     f = bd.bf_to_function("")
     f.argtypes = None
     tape = ctypes.create_string_buffer(1)
     assert tape._type_ is ctypes.c_char
-    f(tape)
+    with pytest.raises(ctypes.ArgumentError):
+        f(tape)
+    f(bd.as_tape(tape))
