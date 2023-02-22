@@ -36,8 +36,8 @@ def intermediate_to_function(intermediate: AST) -> Callable[[Tape], None]:
     return _machine_code_to_function(code)
 
 
-_byte_p = ctypes.POINTER(ctypes.c_ubyte)
-_functype = ctypes.CFUNCTYPE(None, _byte_p)
+_ubyte_p = ctypes.POINTER(ctypes.c_ubyte)
+_functype = ctypes.CFUNCTYPE(None, _ubyte_p)
 
 
 def _executable_memory(size: int) -> mmap.mmap:
