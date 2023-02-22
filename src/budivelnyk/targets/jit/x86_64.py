@@ -25,21 +25,21 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
     for node in intermediate:
         match node:
             case Add(1):
-                yield b"\xfe\x07"  # inc byte ptr [rdi]
+                yield b"\xfe\x07"            # inc byte ptr [rdi]
             case Add(n):
-                yield b"\x80\x07" + bytes([n])  # add byte ptr [rdi], n
+                yield b"\x80\x07%c" % n      # add byte ptr [rdi], n
             case Subtract(1):
-                yield b"\xfe\x0f"  # dec byte ptr [rdi]
+                yield b"\xfe\x0f"            # dec byte ptr [rdi]
             case Subtract(n):
-                yield b"\x80\x2f" + bytes([n])  # sub byte ptr [rdi], n
+                yield b"\x80\x2f%c" % n      # sub byte ptr [rdi], n
             case Forward(1):
-                yield b"\x48\xff\xc7"  # inc rdi
+                yield b"\x48\xff\xc7"        # inc rdi
             case Forward(n):
-                yield b"\x48\x83\xc7" + bytes([n])  # add rdi, n
+                yield b"\x48\x83\xc7%c" % n  # add rdi, n
             case Back(1):
-                yield b"\x48\xff\xcf"  # dec rdi
+                yield b"\x48\xff\xcf"        # dec rdi
             case Back(n):
-                yield b"\x48\x83\xef" + bytes([n])  # sub rdi, n
+                yield b"\x48\x83\xef%c" % n  # sub rdi, n
             case Output(n):
                 yield b"\x57"               # push rdi
                 yield b"\x48\x0f\xb6\x3f"   # movzx rdi, byte ptr [rdi]
@@ -69,10 +69,10 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 start_to_end = distance + 2
                 end_to_start = 0x100 - distance - 7
 
-                yield b"\x80\x3f\x00"                  # cmp byte ptr [rdi], 0
-                yield b"\x74" + bytes([start_to_end])  # je end
+                yield b"\x80\x3f\x00"           # cmp byte ptr [rdi], 0
+                yield b"\x74%c" % start_to_end  # je end
                 yield compiled_body
-                yield b"\xeb" + bytes([end_to_start])  # jmp start
+                yield b"\xeb%c" % end_to_start  # jmp start
 
 
 def _generate_epilogue() -> bytes:
