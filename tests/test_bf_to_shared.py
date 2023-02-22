@@ -1,18 +1,12 @@
 import sys
-from os import path
 from ctypes import CDLL
 from subprocess import run, Popen, PIPE
 import pytest
 from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
+from helpers import generate_paths
 
 
 targets = Target.candidates()
-
-
-def generate_paths(tmp_path, name):
-    asm = path.join(tmp_path, f"{name}.s")
-    library = path.join(tmp_path, f"lib{name}.so")
-    return asm, library
 
 
 @pytest.mark.parametrize("target", targets)
