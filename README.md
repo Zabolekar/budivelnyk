@@ -217,6 +217,19 @@ my_lib.run(b"test")
 
 If your code doesn't modify the tape, it may work, but do not rely on this. **Do not ever** do this if your code modifies the tape. This will cause bizarre bugs, e.g. literals like `b"\0"` evaluating to `b"\xff"`. The Python interpreter expects all `bytes` objects to be immutable and reuses them.
 
+## JIT Compilation (Experimental)
+
+On AMD64, the `bf_to_function` function generates immediately runnable machine code without an external assembler or linker:
+
+```pycon
+>>> import budivelnyk as bd
+>>> tape = bd.create_tape(bytes([5,6]))
+>>> add = bd.bf_to_function(">[-<+>]")
+>>> add(tape)
+>>> tape[:]
+[11, 0]
+```
+
 ## Optimisations
 
 The compiler performs simple optimisations like folding every sequence of the form `+++++` or `<<` into one assembly instruction.
