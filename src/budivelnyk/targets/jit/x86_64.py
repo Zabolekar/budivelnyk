@@ -14,7 +14,7 @@ def generate_x86_64(intermediate: AST) -> bytes:
           + _generate_epilogue())
 
 
-def _generate_prologue():
+def _generate_prologue() -> bytes:
     return (b"\x41\x54"                       # push r12
           + b"\x41\x55"                       # push r13
           + b"\x49\xbc" + encoded_write_char  # movabs r12, encoded_write_char
@@ -63,7 +63,7 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 pass # TODO
 
 
-def _generate_epilogue():
+def _generate_epilogue() -> bytes:
     return (b"\x41\x5d"  # pop r13
           + b"\x41\x5c"  # pop r12
           + b"\xc3")     # ret
