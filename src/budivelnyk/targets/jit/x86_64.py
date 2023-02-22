@@ -44,7 +44,7 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 yield (b"\x57"               # push rdi
                        b"\x48\x0f\xb6\x3f")  # movzx rdi, byte ptr [rdi]
                 sequence = [
-                    b"\x41\xff\xd4"          # call r12 (see prologue)
+                    b"\x41\xff\xd4",         # call r12 (see prologue)
                     b"\x48\x89\xc7"          # mov rdi, rax
                 ] * n
                 yield from sequence[:-1]
