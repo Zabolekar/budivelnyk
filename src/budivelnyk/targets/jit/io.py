@@ -13,7 +13,7 @@ def _reinterpret_pointer(pointer) -> bytes:  # type: ignore
 
 @ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_int)  # type: ignore
 def _write_char(i: int) -> int:
-    print(chr(i), end="")
+    print(chr(i), end="", flush=True)
     return i
 
 
