@@ -1,13 +1,20 @@
 """
-Compile bf to asm. Cell size is one byte.
+Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
 import subprocess
 from warnings import warn
-from typing import Iterator
+from typing import Callable, Iterator
 
+from .tape import Tape, create_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
+from .targets.jit import intermediate_to_function
+
+
+def bf_to_function(bf_code: str) -> Callable[[Tape], None]:
+    intermediate: AST = bf_to_intermediate(bf_code)
+    return intermediate_to_function(intermediate)
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:

@@ -1,18 +1,12 @@
 import sys
-from os import path
-from ctypes import CDLL, create_string_buffer
+from ctypes import CDLL
 from subprocess import run, Popen, PIPE
 import pytest
-from budivelnyk import bf_to_shared, bf_file_to_shared, Target
+from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
+from helpers import generate_paths
 
 
 targets = Target.candidates()
-
-
-def generate_paths(tmp_path, name):
-    asm = path.join(tmp_path, f"{name}.s")
-    library = path.join(tmp_path, f"lib{name}.so")
-    return asm, library
 
 
 @pytest.mark.parametrize("target", targets)
@@ -22,9 +16,9 @@ def test_increment_string(target, tmp_path):
     bf_to_shared(bf, asm, library, target=target)
 
     libinc = CDLL(library)
-    buffer = create_string_buffer(b"Gdkkn+\x1f`rrdlakx ", 16)
+    buffer = create_tape(b"Gdkkn+\x1f`rrdlakx \x00")
     libinc.run(buffer)
-    assert bytes(buffer) == b"Hello, assembly!"
+    assert bytes(buffer) == b"Hello, assembly!\x00"
 
 
 @pytest.mark.parametrize("target", targets)
@@ -34,14 +28,14 @@ def test_zero_minus_one(target, tmp_path):
     bf_to_shared(bf, asm, library, target=target)
 
     libzmo = CDLL(library)
-    a = create_string_buffer(b"\x00", 1)
-    b = create_string_buffer(b" ", 1)
-    c = create_string_buffer(b"2", 1)
+    a = create_tape(b"\x00")
+    b = create_tape(b" ")
+    c = create_tape(b"2")
     libzmo.run(a)
     libzmo.run(b)
     libzmo.run(c)
-    assert bytes(a) == bytes(b) == bytes(c) == b"\xff"
-    d = create_string_buffer(b"1234", 4)
+    assert a[:] == b[:] == c[:] == [255]
+    d = create_tape(b"1234")
     libzmo.run(d)
     assert bytes(d) == b"\xff234"
 
@@ -79,13 +73,11 @@ def test_composable_fibs(target, tmp_path):
     bf_file_to_shared(bf, asm, library, target=target)
 
     libfibs = CDLL(library)
-    buffer = create_string_buffer(bytes([0, 1, 0, 0]), 4)
+    buffer = create_tape(bytes([0, 1, 0, 0]))
     fibs = []
     for i in range(14):
         libfibs.run(buffer)
-        # for some reason, subscript operator of a ctypes char array returns a bytes object of length 1:
-        element = buffer[0]
-        [byte] = element
+        byte = buffer[0]
         fibs.append(byte)
     # 121 because the cell overflows:
     assert fibs == [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 121]
