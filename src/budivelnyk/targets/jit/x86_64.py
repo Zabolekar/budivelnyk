@@ -60,7 +60,19 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 yield b"\x0f\x48\xc2"       # cmovs eax, edx
                 yield b"\x88\x07"           # mov byte ptr [rdi], al
             case Loop(body):
-                pass # TODO
+                # TODO: this only supports short jumps, that is, [-128..127]
+                compiled_body = b"".join(_generate_body(body))
+
+                # Displacements: 2 is the length in bytes of the jump to the
+                # beginning, and 7 is the length of comparison and both jumps.
+                distance = len(compiled_body)
+                start_to_end = distance + 2
+                end_to_start = 0x100 - distance - 7
+
+                yield b"\x80\x3f\x00"                  # cmp byte ptr [rdi], 0
+                yield b"\x74" + bytes([start_to_end])  # je end
+                yield compiled_body
+                yield b"\xeb" + bytes([end_to_start])  # jmp start
 
 
 def _generate_epilogue() -> bytes:
