@@ -17,9 +17,9 @@ Note: this bf variant is *not* Turing complete. For that, you'd need either unbo
 Supported targets are, in alphabetical order:
 
 - `ARM32`: 32-bit ARM, A32 instruction set.
-  - Tested on: Linux.
+  - Tested on: Linux, NetBSD.
 - `ARM32_THUMB`: 32-bit ARM, T32 instruction set aka Thumb-2.
-  - Tested on: Linux.
+  - Tested on: Linux, NETBSD.
 - `ARM64`: 64-bit ARM aka AArch64.
   - Tested on: NetBSD, OpenBSD.
 - `RISCV64`: 64-bit RISC-V. In theory, the generated asm should run on RV64I without any extensions. In practice, we've only tested it on a RV64GCV machine.

@@ -32,11 +32,13 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
 
 def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
     match processor:
-        case "aarch64":  # only tested with Net and Open
+        case "aarch64":  # tested with Net and Open
             return (Target.ARM64,)
-        case "amd64":  # only tested with Free
+        case "amd64":  # tested with Free
             return (Target.X86_64_INTEL, Target.X86_64_ATT)
-        case "i386":  # only tested with Open
+        case "earmv7hf":  # tested with Net
+            return (Target.ARM32_THUMB, Target.ARM32)
+        case "i386":  # tested with Open
             return (Target.X86_32_INTEL, Target.X86_32_ATT)
         case _:
             raise NotImplementedError(f"{system} on {processor} is not supported")
