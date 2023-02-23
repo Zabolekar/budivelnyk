@@ -20,6 +20,8 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
     match machine:
         case "armv7l":
             return (Target.ARM32_THUMB, Target.ARM32)
+        case "i686":
+            return (Target.X86_32_INTEL, Target.X86_32_ATT)
         case "riscv64":
             return (Target.RISCV64,)
         case "x86_64":
