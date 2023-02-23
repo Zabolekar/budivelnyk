@@ -27,7 +27,7 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
         case "x86_64":
             return (Target.X86_64_INTEL, Target.X86_64_ATT)
         case _:
-            raise RuntimeError(f"Linux on {machine} is not supported")
+            raise NotImplementedError(f"Linux on {machine} is not supported")
 
 
 def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
@@ -39,7 +39,7 @@ def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
         case "i386":  # only tested with Open
             return (Target.X86_32_INTEL, Target.X86_32_ATT)
         case _:
-            raise RuntimeError(f"{system} on {processor} is not supported")
+            raise NotImplementedError(f"{system} on {processor} is not supported")
 
 
 class Target(enum.Enum):
@@ -61,7 +61,7 @@ class Target(enum.Enum):
             case "NetBSD" | "OpenBSD" | "FreeBSD":
                 return _bsd_candidates(system, platform.processor())
             case _:
-                raise RuntimeError(f"unsupported or unknown OS: {system}")
+                raise NotImplementedError(f"unsupported or unknown OS: {system}")
 
     @staticmethod
     def suggest() -> Target:

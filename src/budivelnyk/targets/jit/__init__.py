@@ -8,27 +8,31 @@ from ...intermediate import AST
 from .x86_64 import generate_x86_64
 
 
-def find_jit_compiler() -> Callable[[AST], bytes] | str:
-    "Return a function if platform is supported, error message otherwise."
+def jit_compiler_implemented() -> bool:
+    try:
+        _find_jit_compiler()
+        return True
+    except NotImplementedError:
+        return False
+
+
+def _find_jit_compiler() -> Callable[[AST], bytes]:
     # see also dispatching code in targets/__init__.py
 
     system = platform.system()
     if system != "Linux":
-        return f"unsupported or unknown OS: {system}"
+        raise NotImplementedError(f"unsupported or unknown OS: {system}")
 
     machine = platform.machine()
     if machine != "x86_64":
-        return f"Linux on {machine} is not supported"
+        raise NotImplementedError(f"Linux on {machine} is not supported")
 
     return generate_x86_64
 
 
 def _intermediate_to_machine_code(intermediate: AST) -> bytes | str:
-    compiler = find_jit_compiler()
-    if callable(compiler):
-        return compiler(intermediate)
-    else:
-        raise RuntimeError(compiler)
+    compiler = _find_jit_compiler()
+    return compiler(intermediate)
 
 
 def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
