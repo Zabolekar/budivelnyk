@@ -1,7 +1,7 @@
 import ctypes
 import pytest
 import budivelnyk as bd
-from helpers import generate_paths
+from helpers import generate_paths, skip_if_jit_not_implemented
 
 
 @pytest.fixture
@@ -18,6 +18,7 @@ def test_dll_with_our_tape(nop_dll):
     f(tape)
 
 
+@skip_if_jit_not_implemented
 def test_jit_with_our_tape():
     f = bd.bf_to_function("")
     tape = bd.create_tape(1)
@@ -31,6 +32,7 @@ def test_dll_with_bytes(nop_dll):
     f(tape)
 
 
+@skip_if_jit_not_implemented
 def test_jit_with_bytes():
     f = bd.bf_to_function("")
     tape = b"\x00"
@@ -48,6 +50,7 @@ def test_dll_with_c_bytes(nop_dll):
     f(tape)
 
 
+@skip_if_jit_not_implemented
 def test_jit_with_c_bytes():
     f = bd.bf_to_function("")
     tape = (ctypes.c_byte * 1)()
@@ -64,6 +67,7 @@ def test_dll_with_chars(nop_dll):
     f(tape)
 
 
+@skip_if_jit_not_implemented
 def test_jit_with_chars():
     f = bd.bf_to_function("")
     f.argtypes = None

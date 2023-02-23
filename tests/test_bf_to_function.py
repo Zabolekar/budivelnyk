@@ -1,13 +1,5 @@
 from budivelnyk import bf_to_function, create_tape
-from budivelnyk.targets.jit import jit_compiler_implemented
-import pytest
-
-
-jit_not_implemented = not jit_compiler_implemented()
-skip_if_jit_not_implemented = pytest.mark.skipif(
-    jit_not_implemented,
-    reason="JIT compiler not implemented for this platform"
-)
+from helpers import skip_if_jit_not_implemented
 
 
 @skip_if_jit_not_implemented
