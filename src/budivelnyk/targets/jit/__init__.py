@@ -25,9 +25,9 @@ def _intermediate_to_machine_code(intermediate: AST) -> bytes:
 def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
     size = len(code)
     memory = _executable_memory(size)
+    memory.write(code)
     array_t = ctypes.c_byte * size
     array_view = array_t.from_buffer(memory)
-    ctypes.memmove(array_view, code, size)
     return ctypes.cast(array_view, _functype)
 
 
