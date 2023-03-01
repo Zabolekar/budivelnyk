@@ -33,7 +33,7 @@ Supported targets are, in alphabetical order:
 - `X86_64_INTEL`: x86_64 aka AMD64 (Intel syntax).
   - Tested on: Linux, FreeBSD.
 
-Supported assemblers are GAS and the LLVM assembler.
+Supported assemblers are GAS and the LLVM integrated assembler.
 
 ## Requirements
 
