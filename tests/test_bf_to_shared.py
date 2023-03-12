@@ -53,13 +53,13 @@ def test_print_hello(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_echo(target, tmp_path):
+def test_tee(target, tmp_path):
     bf = "+[,.]"
-    asm, library = generate_paths(tmp_path, "echo")
+    asm, library = generate_paths(tmp_path, "tee")
     bf_to_shared(bf, asm, library, target=target)
 
-    call_echo = [sys.executable, "tests/py/call_echo.py", library]
-    with Popen(call_echo, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
+    call_tee = [sys.executable, "tests/py/call_tee.py", library]
+    with Popen(call_tee, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"123\n456"
         output, error = process.communicate(input=input, timeout=3)
         assert output == input + b"\0" # because we treat EOF as 0
