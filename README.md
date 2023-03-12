@@ -219,7 +219,7 @@ If your code doesn't modify the tape, it may work, but do not rely on this. **Do
 
 ## JIT Compilation (Experimental)
 
-On AMD64, the `bf_to_function` function generates immediately runnable machine code without an external assembler or linker:
+On x86_64 Linux, the `bf_to_function` function generates immediately runnable machine code without an external assembler or linker:
 
 ```pycon
 >>> import budivelnyk as bd
