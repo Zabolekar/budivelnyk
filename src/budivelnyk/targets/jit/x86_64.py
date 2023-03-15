@@ -6,59 +6,60 @@ from ...intermediate import (
 )
 
 from .io import encoded_read_char, encoded_write_char
+from .hex import b
 
 
 def generate_x86_64(intermediate: AST) -> bytes:
-    return (_generate_prologue()
-          + b"".join(_generate_body(intermediate))
-          + _generate_epilogue())
+    return b"".join([*_generate_prologue(),
+                     *_generate_body(intermediate),
+                     *_generate_epilogue()])
 
 
-def _generate_prologue() -> bytes:
-    return (b"\x41\x54"                       # push r12
-          + b"\x41\x55"                       # push r13
-          + b"\x49\xbc" + encoded_write_char  # movabs r12, encoded_write_char
-          + b"\x49\xbd" + encoded_read_char)  # movabs r13, encoded_read_char
+def _generate_prologue() -> Iterator[bytes]:
+    yield b("41 54")                        # push r12
+    yield b("41 55")                        # push r13
+    yield b("49 BC", encoded_write_char)    # movabs r12, encoded_write_char
+    yield b("49 BD", encoded_read_char)     # movabs r13, encoded_read_char
 
 
 def _generate_body(intermediate: AST) -> Iterator[bytes]:
     for node in intermediate:
         match node:
             case Add(1):
-                yield b"\xfe\x07"            # inc byte ptr [rdi]
+                yield b("FE 07")            # inc byte ptr [rdi]
             case Add(n):
-                yield b"\x80\x07%c" % n      # add byte ptr [rdi], n
+                yield b("80 07", n)     # add byte ptr [rdi], n
             case Subtract(1):
-                yield b"\xfe\x0f"            # dec byte ptr [rdi]
+                yield b("FE 0F")            # dec byte ptr [rdi]
             case Subtract(n):
-                yield b"\x80\x2f%c" % n      # sub byte ptr [rdi], n
+                yield b("80 2F", n)      # sub byte ptr [rdi], n
             case Forward(1):
-                yield b"\x48\xff\xc7"        # inc rdi
+                yield b("48 FF C7")        # inc rdi
             case Forward(n):
-                yield b"\x48\x83\xc7%c" % n  # add rdi, n  TODO: large n
+                yield b("48 83 C7", n)  # add rdi, n  TODO: large n
             case Back(1):
-                yield b"\x48\xff\xcf"        # dec rdi
+                yield b("48 FF CF")        # dec rdi
             case Back(n):
-                yield b"\x48\x83\xef%c" % n  # sub rdi, n  TODO: large n
+                yield b("48 83 EF", n)  # sub rdi, n  TODO: large n
             case Output(n):
-                yield (b"\x57"               # push rdi
-                       b"\x48\x0f\xb6\x3f")  # movzx rdi, byte ptr [rdi]
+                yield b("57")              # push rdi
+                yield b("48 0F B6 3F")     # movzx rdi, byte ptr [rdi]
                 sequence = [
-                    b"\x41\xff\xd4",         # call r12 (see prologue)
-                    b"\x48\x89\xc7"          # mov rdi, rax
+                    b("41 FF D4"),         # call r12 (see prologue)
+                    b("48 89 C7")          # mov rdi, rax
                 ] * n
                 yield from sequence[:-1]
-                yield b"\x5f"                # pop rdi
+                yield b("5F")              # pop rdi
             case Input(n):
-                yield b"\x57"                # push   rdi
+                yield b("57")              # push rdi
                 yield from [
-                    b"\x41\xff\xd5"          # call r13 (see prologue)
+                    b("41 FF D5")          # call r13 (see prologue)
                 ] * n
-                yield (b"\x5f"               # pop rdi
-                       b"\x31\xd2"           # xor edx, edx
-                       b"\x85\xc0"           # test eax, eax
-                       b"\x0f\x48\xc2"       # cmovs eax, edx
-                       b"\x88\x07")          # mov byte ptr [rdi], al
+                yield b("5F")              # pop rdi
+                yield b("31 D2")           # xor edx, edx
+                yield b("85 C0")           # test eax, eax
+                yield b("0F 48 C2")        # cmovs eax, edx
+                yield b("88 07")           # mov byte ptr [rdi], al
             case Loop(body):
                 # TODO: this only supports short jumps, that is, [-128..127]
                 compiled_body = b"".join(_generate_body(body))
@@ -69,13 +70,13 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 start_to_end = distance + 2
                 end_to_start = 0x100 - distance - 7
 
-                yield b"\x80\x3f\x00"           # cmp byte ptr [rdi], 0
-                yield b"\x74%c" % start_to_end  # je end
+                yield b("80 3F 00")           # cmp byte ptr [rdi], 0
+                yield b("74", start_to_end)   # je end
                 yield compiled_body
-                yield b"\xeb%c" % end_to_start  # jmp start
+                yield b("EB", end_to_start)   # jmp start
 
 
-def _generate_epilogue() -> bytes:
-    return (b"\x41\x5d"  # pop r13
-            b"\x41\x5c"  # pop r12
-            b"\xc3")     # ret
+def _generate_epilogue() -> Iterator[bytes]:
+    yield b("41 5D")   # pop r13
+    yield b("41 5C")   # pop r12
+    yield b("C3")      # ret

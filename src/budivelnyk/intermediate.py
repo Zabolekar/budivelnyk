@@ -55,7 +55,7 @@ def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> Iterable[Node]:
         specimen = group[0]
         match specimen:
             case bf.Inc():
-                yield Add(count)
+                yield Add(count)  # TODO: check for byte overflow in add and subtract
             case bf.Dec():
                 yield Subtract(count)
             case bf.Forward():
