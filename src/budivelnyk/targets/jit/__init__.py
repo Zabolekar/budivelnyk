@@ -30,7 +30,7 @@ def _find_jit_compiler() -> Callable[[AST], bytes]:
     return generate_x86_64
 
 
-def _intermediate_to_machine_code(intermediate: AST) -> bytes | str:
+def _intermediate_to_machine_code(intermediate: AST) -> bytes:
     compiler = _find_jit_compiler()
     return compiler(intermediate)
 
