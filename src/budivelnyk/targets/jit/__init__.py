@@ -21,11 +21,11 @@ def _find_jit_compiler() -> Callable[[AST], bytes]:
 
     system = platform.system()
     if system != "Linux":
-        raise NotImplementedError(f"unsupported or unknown OS: {system}")
+        raise NotImplementedError(f"JIT is not implemented for {system}")
 
     machine = platform.machine()
     if machine != "x86_64":
-        raise NotImplementedError(f"Linux on {machine} is not supported")
+        raise NotImplementedError(f"JIT is not implemented for Linux on {machine}")
 
     return generate_x86_64
 

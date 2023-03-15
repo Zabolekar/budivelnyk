@@ -2,19 +2,47 @@
 Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
+import enum
 import subprocess
+from os import path
+from ctypes import CDLL
 from warnings import warn
 from typing import Callable, Iterator
+from tempfile import TemporaryDirectory
 
 from .tape import Tape, create_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
-from .targets.jit import intermediate_to_function
+from .targets.jit import intermediate_to_function, jit_compiler_implemented
 
 
-def bf_to_function(bf_code: str) -> Callable[[Tape], None]:
-    intermediate: AST = bf_to_intermediate(bf_code)
-    return intermediate_to_function(intermediate)
+class UseJIT(enum.Enum):
+    TRUE = enum.auto()  # attempt to use, raise exception if not implemented
+    FALSE = enum.auto()  # do not attempt to use
+    IF_AVAILABLE = enum.auto()  # check whether implemented, use if implemented
+
+    def __bool__(self) -> bool:
+        match self:
+            case UseJIT.TRUE:
+                return True
+            case UseJIT.FALSE:
+                return False
+            case UseJIT.IF_AVAILABLE:
+                return jit_compiler_implemented()
+
+
+# TODO: some tape tests fail without JIT due to less strict type requirements
+# TODO: document
+def bf_to_function(bf_code: str, use_jit: UseJIT = UseJIT.IF_AVAILABLE) -> Callable[[Tape], None]:    
+    if use_jit:
+        intermediate: AST = bf_to_intermediate(bf_code)
+        return intermediate_to_function(intermediate)
+    else:
+        with TemporaryDirectory() as tmpdir:
+            asm = path.join(tmpdir, "tmp.s")
+            library = path.join(tmpdir, "libtmp.so")
+            bf_to_shared(bf_code, asm, library)
+            return CDLL(library).run
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:
