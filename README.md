@@ -22,15 +22,11 @@ Supported targets are, in alphabetical order:
   - Tested on: Linux, NETBSD.
 - `ARM64`: 64-bit ARM aka AArch64.
   - Tested on: NetBSD, OpenBSD.
-- `RISCV64`: 64-bit RISC-V. In theory, the generated asm should run on RV64I without any extensions. In practice, we've only tested it on a RV64GCV machine.
+- `RISCV64`: 64-bit RISC-V.
   - Tested on: Linux.
-- `X86_32_ATT`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax).
+- `X86_32_ATT` and `X86_32_INTEL`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax and Intel syntax).
   - Tested on: OpenBSD, Linux.
-- `X86_32_INTEL`: IA-32 aka i386 aka 32-bit x86 (Intel syntax).
-  - Tested on: OpenBSD, Linux.
-- `X86_64_ATT`: x86_64 aka AMD64 (AT&T syntax).
-  - Tested on: Linux, FreeBSD.
-- `X86_64_INTEL`: x86_64 aka AMD64 (Intel syntax).
+- `X86_64_ATT` and `X86_64_INTEL`: x86_64 aka AMD64 (AT&T syntax and Intel syntax).
   - Tested on: Linux, FreeBSD.
 
 Supported assemblers are GAS and the LLVM integrated assembler.
@@ -229,6 +225,8 @@ On x86_64 Linux, the `bf_to_function` function generates immediately runnable ma
 >>> tape[:]
 [11, 0]
 ```
+
+On other platforms, `bf_to_function` *does* use the external assembler and linker just like `bf_to_shared` does.
 
 ## Optimisations
 

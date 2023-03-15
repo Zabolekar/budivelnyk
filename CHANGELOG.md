@@ -17,7 +17,7 @@ can be found in the version control log.
 # 0.0.2
 
 - 64-bit ARM support.
-- On AMD64, the Intel syntax is supported and the default.
+- On AMD64, Intel syntax is supported and becomes the default.
 - Optimizations for `++`, `<<<` and similar sequences.
 - Dead code elimination for consecutve loops.
 
