@@ -3,13 +3,12 @@ Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
 import enum
-import subprocess
 from os import path
 from ctypes import CDLL
-from warnings import warn
 from typing import Callable, Iterator
 from tempfile import TemporaryDirectory
 
+from .helpers import run_and_maybe_fail
 from .tape import Tape, create_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
@@ -66,17 +65,8 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
 
 def bf_to_shared(bf_code: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
     bf_to_asm_file(bf_code, asm_path, target=target)
-    asm_to_shared = ["cc", "-shared", "-o", output_path, asm_path]
-    process = subprocess.run(asm_to_shared, capture_output=True)
-    stdout = process.stdout.decode(errors='replace')
-    stderr = process.stderr.decode(errors='replace')
-    if stdout:
-        print(stdout)
-    if stderr:
-        if process.returncode == 0:
-            warn(stderr, RuntimeWarning)
-        else:
-            raise RuntimeError(stderr)
+    # asm to shared:
+    run_and_maybe_fail("cc", "-shared", "-o", output_path, asm_path)
 
 
 def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
