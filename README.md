@@ -70,7 +70,9 @@ run:
     sub   byte ptr [rdi], 2
     ret
 
+#ifdef LINUX
     .section .note.GNU-stack, "", @progbits
+#endif
 ```
 
 You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that can run on your hardware with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`.
