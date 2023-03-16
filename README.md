@@ -22,6 +22,8 @@ Supported targets are, in alphabetical order:
   - Tested on: Linux, NETBSD.
 - `ARM64`: 64-bit ARM aka AArch64.
   - Tested on: NetBSD, OpenBSD.
+- `PPC32`: 32-bit PowerPC.
+  - Tested on: Mac OS X Leopard.
 - `RISCV64`: 64-bit RISC-V.
   - Tested on: Linux.
 - `X86_32_ATT` and `X86_32_INTEL`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax and Intel syntax).

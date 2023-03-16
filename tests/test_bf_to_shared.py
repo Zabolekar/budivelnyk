@@ -57,7 +57,7 @@ def test_tee(target, library_path):
     call_tee = [sys.executable, "tests/py/call_tee.py", library_path]
     with Popen(call_tee, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"123\n456"
-        output, error = process.communicate(input=input, timeout=3)
+        output, error = process.communicate(input=input, timeout=3) # TODO: timeout doesn't work
         assert output == input + b"\0" # because we treat EOF as 0
         assert not error
 

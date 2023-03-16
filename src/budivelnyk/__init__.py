@@ -5,6 +5,7 @@ Compile bf to asm or to a Python function. Cell size is one byte.
 import enum
 from os import path
 from ctypes import CDLL
+from platform import system
 from typing import Callable, Iterator
 from tempfile import NamedTemporaryFile
 
@@ -70,7 +71,8 @@ def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.sugg
         # assemble:
         run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
-        run_and_maybe_fail("cc", "-shared", object_path, "-o", output_path)
+        SHARED = "-dynamiclib" if system() == "Darwin" else "-shared" 
+        run_and_maybe_fail("cc", SHARED, object_path, "-o", output_path)
 
 
 def bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:

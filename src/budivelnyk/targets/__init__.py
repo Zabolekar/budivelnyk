@@ -6,6 +6,7 @@ from typing import Iterator
 from ..intermediate import AST
 from .arm32 import generate_arm32
 from .arm64 import generate_arm64
+from .ppc32 import generate_ppc32
 from .riscv64 import generate_riscv64
 from .x86_32_att import generate_x86_32_att
 from .x86_32_intel import generate_x86_32_intel
@@ -40,6 +41,8 @@ def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
             return (Target.ARM32_THUMB, Target.ARM32)
         case "i386":  # tested with Open
             return (Target.X86_32_INTEL, Target.X86_32_ATT)
+        case "powerpc":  # tested with Mac OS X
+            return (Target.PPC32,)
         case _:
             raise NotImplementedError(f"{system} on {processor} is not supported")
 
@@ -48,6 +51,7 @@ class Target(enum.Enum):
     ARM32 = enum.auto()
     ARM32_THUMB = enum.auto()
     ARM64 = enum.auto()
+    PPC32 = enum.auto()
     RISCV64 = enum.auto()
     X86_32_ATT = enum.auto()
     X86_32_INTEL = enum.auto()
@@ -60,7 +64,7 @@ class Target(enum.Enum):
         match system:
             case "Linux":
                 return _linux_candidates(platform.machine())
-            case "NetBSD" | "OpenBSD" | "FreeBSD":
+            case "NetBSD" | "OpenBSD" | "FreeBSD" | "Darwin":
                 return _bsd_candidates(system, platform.processor())
             case _:
                 raise NotImplementedError(f"unsupported or unknown OS: {system}")
@@ -78,6 +82,8 @@ class Target(enum.Enum):
                 yield from generate_arm32(intermediate, thumb=True)
             case Target.ARM64:
                 yield from generate_arm64(intermediate)
+            case Target.PPC32:
+                yield from generate_ppc32(intermediate)
             case Target.RISCV64:
                 yield from generate_riscv64(intermediate)
             case Target.X86_32_ATT:
@@ -90,4 +96,3 @@ class Target(enum.Enum):
                 yield from generate_x86_64_intel(intermediate)
             case _:
                 raise RuntimeError(f"unhandled target {self}, this is a bug")
-
