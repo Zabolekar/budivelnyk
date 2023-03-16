@@ -3,31 +3,29 @@ from ctypes import CDLL
 from subprocess import run, Popen, PIPE
 import pytest
 from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
-from helpers import generate_paths
+from helpers import library_path
 
 
 targets = Target.candidates()
 
 
 @pytest.mark.parametrize("target", targets)
-def test_increment_string(target, tmp_path):
+def test_increment_string(target, library_path):
     bf = "[+>]"
-    asm, library = generate_paths(tmp_path, "inc")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_to_shared(bf, library_path, target=target)
 
-    libinc = CDLL(library)
+    libinc = CDLL(library_path)
     buffer = create_tape(b"Gdkkn+\x1f`rrdlakx \x00")
     libinc.run(buffer)
     assert bytes(buffer) == b"Hello, assembly!\x00"
 
 
 @pytest.mark.parametrize("target", targets)
-def test_zero_minus_one(target, tmp_path):
+def test_zero_minus_one(target, library_path):
     bf = "[-]-"
-    asm, library = generate_paths(tmp_path, "zmo")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_to_shared(bf, library_path, target=target)
 
-    libzmo = CDLL(library)
+    libzmo = CDLL(library_path)
     a = create_tape(b"\x00")
     b = create_tape(b" ")
     c = create_tape(b"2")
@@ -41,24 +39,22 @@ def test_zero_minus_one(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_print_hello(target, tmp_path):
+def test_print_hello(target, library_path):
     bf = "tests/bf/hello.bf"
-    asm, library = generate_paths(tmp_path, "hello")
-    bf_file_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, library_path, target=target)
 
-    call_hello = [sys.executable, "tests/py/call_hello.py", library]
+    call_hello = [sys.executable, "tests/py/call_hello.py", library_path]
     result = run(call_hello, capture_output=True)
     result.check_returncode()
     assert result.stdout == b"hello\n"
 
 
 @pytest.mark.parametrize("target", targets)
-def test_tee(target, tmp_path):
+def test_tee(target, library_path):
     bf = "+[,.]"
-    asm, library = generate_paths(tmp_path, "tee")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_to_shared(bf, library_path, target=target)
 
-    call_tee = [sys.executable, "tests/py/call_tee.py", library]
+    call_tee = [sys.executable, "tests/py/call_tee.py", library_path]
     with Popen(call_tee, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"123\n456"
         output, error = process.communicate(input=input, timeout=3)
@@ -67,12 +63,11 @@ def test_tee(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_composable_fibs(target, tmp_path):
+def test_composable_fibs(target, library_path):
     bf = "tests/bf/fibs.bf"
-    asm, library = generate_paths(tmp_path, "fibs")
-    bf_file_to_shared(bf, asm, library, target=target)
+    bf_file_to_shared(bf, library_path, target=target)
 
-    libfibs = CDLL(library)
+    libfibs = CDLL(library_path)
     buffer = create_tape(bytes([0, 1, 0, 0]))
     fibs = []
     for i in range(14):
@@ -84,12 +79,11 @@ def test_composable_fibs(target, tmp_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_consecutive_reads(target, tmp_path):
+def test_consecutive_reads(target, library_path):
     bf = ",,,"
-    asm, library = generate_paths(tmp_path, "reads")
-    bf_to_shared(bf, asm, library, target=target)
+    bf_to_shared(bf, library_path, target=target)
 
-    call_reads = [sys.executable, "tests/py/call_reads.py", library]
+    call_reads = [sys.executable, "tests/py/call_reads.py", library_path]
     with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"abc"
         output, error = process.communicate(input=input, timeout=3)

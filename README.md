@@ -85,12 +85,12 @@ bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
 
 ## Creating Shared Libraries
 
-The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_file_to_shared` helper function to create asm *and* the shared library directly from bf code:
+The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_file_to_shared` helper function to create the shared library directly from bf code:
 
 ```python
 from budivelnyk import bf_file_to_shared
 
-bf_file_to_shared("input.bf", "output.s", "liboutput.so")
+bf_file_to_shared("input.bf", "liboutput.so")
 ```
 
 The compiler always generates exactly one function named `run` that you can use as if its definition were `void run(unsigned char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.
@@ -101,7 +101,7 @@ Let's say you have created a bf shared library like this:
 
 ```python
 import budivelnyk as bd
-bd.bf_to_shared(".+.+.>.", "test.s", "test.so")
+bd.bf_to_shared(".+.+.>.", "test.so")
 ```
 
 If the shared library exists at compilation time, you can call it from C like this:

@@ -6,7 +6,7 @@ import enum
 from os import path
 from ctypes import CDLL
 from typing import Callable, Iterator
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 
 from .helpers import run_and_maybe_fail
 from .tape import Tape, create_tape, as_tape
@@ -37,11 +37,10 @@ def bf_to_function(bf_code: str, use_jit: UseJIT = UseJIT.IF_AVAILABLE) -> Calla
         intermediate: AST = bf_to_intermediate(bf_code)
         return intermediate_to_function(intermediate)
     else:
-        with TemporaryDirectory() as tmpdir:
-            asm = path.join(tmpdir, "tmp.s")
-            library = path.join(tmpdir, "libtmp.so")
-            bf_to_shared(bf_code, asm, library)
-            return CDLL(library).run
+        with NamedTemporaryFile() as library_file:
+            library_path = library_file.name
+            bf_to_shared(bf_code, library_path)
+            return CDLL(library_path).run
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:
@@ -63,14 +62,16 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
     bf_to_asm_file(bf_code, output_path, target=target)
 
 
-def bf_to_shared(bf_code: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    bf_to_asm_file(bf_code, asm_path, target=target)
-    # asm to shared:
-    run_and_maybe_fail("cc", "-shared", "-o", output_path, asm_path)
+def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+    with NamedTemporaryFile(suffix=".s") as asm_file:
+        asm_path = asm_file.name
+        bf_to_asm_file(bf_code, asm_path, target=target)
+        # assemble and link:
+        run_and_maybe_fail("cc", "-shared", "-o", output_path, asm_path)
 
 
-def bf_file_to_shared(input_path: str, asm_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+def bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
     with open(input_path) as input_file:
         bf_code = input_file.read()
 
-    bf_to_shared(bf_code, asm_path, output_path, target=target)
+    bf_to_shared(bf_code, output_path, target=target)

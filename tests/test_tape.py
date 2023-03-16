@@ -1,14 +1,13 @@
 import ctypes
 import pytest
 import budivelnyk as bd
-from helpers import generate_paths, skip_if_jit_not_implemented
+from helpers import library_path, skip_if_jit_not_implemented
 
 
 @pytest.fixture
-def nop_dll(tmp_path):
-    asm, library = generate_paths(tmp_path, "nop")
-    bd.bf_to_shared("", asm, library)
-    return ctypes.CDLL(library)
+def nop_dll(tmp_path, library_path):
+    bd.bf_to_shared("", library_path)
+    return ctypes.CDLL(library_path)
 
 
 def test_dll_with_our_tape(nop_dll):
