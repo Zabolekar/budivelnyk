@@ -6,7 +6,7 @@ import enum
 from os import path
 from ctypes import CDLL
 from typing import Callable, Iterator
-from tempfile import TemporaryDirectory, NamedTemporaryFile
+from tempfile import NamedTemporaryFile
 
 from .helpers import run_and_maybe_fail
 from .tape import Tape, create_tape, as_tape
@@ -63,11 +63,14 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
 
 
 def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    with NamedTemporaryFile(suffix=".s") as asm_file:
-        asm_path = asm_file.name
+    with (NamedTemporaryFile(suffix=".s") as asm_file,
+          NamedTemporaryFile(suffix=".o") as object_file):
+        asm_path, object_path = asm_file.name, object_file.name
         bf_to_asm_file(bf_code, asm_path, target=target)
-        # assemble and link:
-        run_and_maybe_fail("cc", "-shared", "-o", output_path, asm_path)
+        # assemble:
+        run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
+        # link:
+        run_and_maybe_fail("cc", "-shared", object_path, "-o", output_path)
 
 
 def bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
