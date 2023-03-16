@@ -1,6 +1,12 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.0.6
+
+- `bf_to_function` and experimental JIT on x86_64 Linux.
+- `bf_to_shared` and `bf_file_to_shared` no longer require the user to provide
+a path to asm file.
+
 # 0.0.5
 
 - i386 support.
