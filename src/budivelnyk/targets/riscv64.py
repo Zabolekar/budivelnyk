@@ -66,5 +66,7 @@ def _generate_epilogue() -> Iterator[str]:
     yield '    ld     ra, 8(sp)'
     yield '    addi   sp, sp, 16'
     yield '    ret'
-    yield '    .section .note.GNU-stack,"",@progbits'
-
+    yield ''
+    yield '#ifdef LINUX'
+    yield '    .section .note.GNU-stack, "", @progbits'
+    yield '#endif'

@@ -1,5 +1,4 @@
 from typing import Iterator
-from platform import system
 
 from ..intermediate import (
     AST, Loop,

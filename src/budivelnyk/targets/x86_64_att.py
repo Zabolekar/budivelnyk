@@ -1,5 +1,4 @@
 from typing import Iterator
-from platform import system
 
 from ..intermediate import (
     AST, Loop,
@@ -66,7 +65,8 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
 
 def _generate_epilogue() -> Iterator[str]:
     yield '    ret'
-    if system() == 'Linux':
-        yield ''
-        yield '    .section .note.GNU-stack, "", @progbits'
+    yield ''
+    yield '#ifdef LINUX'
+    yield '    .section .note.GNU-stack, "", @progbits'
+    yield '#endif'
 
