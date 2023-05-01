@@ -62,7 +62,8 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield  '    push  eax'
                 yield  '    sub   esp, 4'
                 yield from ['    call  getchar@PLT'] * n
-                # EOF handling: replace -1 with 0
+                # EOF handling: replace negative values with 0.
+                # Can't use cmovs because it requires i686.
                 yield  '    xor   ecx, ecx'
                 yield  '    test  eax, eax'
                 yield  '    setns cl'

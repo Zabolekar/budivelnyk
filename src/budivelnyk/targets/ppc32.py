@@ -50,6 +50,7 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield  '    mr     r30, r3'
                 yield from ['    bl     _getchar'] * n
                 # TODO: test multiple input sequences with multiple EOFs
+                # EOF handling: replace negative values with 0.
                 yield  '    cmpwi  r3, 0'
                 yield  '    bge+   1f'
                 yield  '    li     r3, 0'

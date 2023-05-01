@@ -47,7 +47,7 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield '    pushq  %rdi'
                 yield from ['    call   getchar'] * n
                 yield '    popq   %rdi'
-                # EOF handling: replace -1 with 0
+                # EOF handling: replace negative values with 0.
                 yield '    xorl   %edx, %edx'
                 yield '    testl  %eax, %eax'
                 yield '    cmovs  %edx, %eax'

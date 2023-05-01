@@ -49,6 +49,7 @@ def _generate_body(intermediate: AST, parent_label: str='', *, thumb: bool) -> I
             case Input(n):
                 yield  '    mov    r4, r0'
                 yield from ['    bl     getchar'] * n
+                # EOF handling: replace negative values with 0.
                 yield  '    cmp    r0, 0'
                 yield  '    ite    ge'
                 yield  '    movge  r1, r0'

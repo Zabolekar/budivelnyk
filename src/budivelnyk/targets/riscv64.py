@@ -44,7 +44,7 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
             case Input(n):
                 yield  '    mv     s0, a0'
                 yield from ['    call   getchar'] * n
-                # a0 := a0 if a0 > 0 else 0: 
+                # EOF handling: replace negative values with 0.
                 yield  '    sgtz   a1, a0'
                 yield  '    neg    a1, a1'
                 yield  '    and    a0, a0, a1'

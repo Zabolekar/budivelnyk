@@ -46,6 +46,7 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
             case Input(n):
                 yield  '    mov    x19, x0'
                 yield from ['    bl     getchar'] * n
+                # EOF handling: replace negative values with 0.
                 yield  '    cmp    w0, 0'
                 yield  '    csel   w1, w0, wzr, ge'
                 yield  '    mov    x0, x19'
