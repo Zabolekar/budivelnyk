@@ -3,6 +3,7 @@ Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
 import enum
+import shutil
 from os import path
 from ctypes import CDLL
 from platform import system
@@ -64,12 +65,22 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
 
 
 def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+    nasm: bool = target in (Target.X86_32_NASM, Target.X86_64_NASM)
+    if not shutil.which("cc"):
+        raise RuntimeError("cc not found")
+    if nasm and not shutil.which("nasm"):
+        raise RuntimeError("nasm not found")
+
     with (NamedTemporaryFile(suffix=".s") as asm_file,
           NamedTemporaryFile(suffix=".o") as object_file):
         asm_path, object_path = asm_file.name, object_file.name
         bf_to_asm_file(bf_code, asm_path, target=target)
         # assemble:
-        run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
+        if nasm:
+            LINUX = ["-DLINUX"] if system() == "Linux" else []
+            run_and_maybe_fail("nasm", "-felf64", asm_path, "-o", object_path, *LINUX)
+        else:
+            run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
         SHARED = "-dynamiclib" if system() == "Darwin" else "-shared" 
         run_and_maybe_fail("cc", SHARED, object_path, "-o", output_path)

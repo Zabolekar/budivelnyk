@@ -17,21 +17,23 @@ Note: this bf variant is *not* Turing complete. For that, you'd need either unbo
 Supported targets are, in alphabetical order:
 
 - `ARM32`: 32-bit ARM, A32 instruction set.
-  - Tested on: Linux, NetBSD.
+  - Tested on Linux, NetBSD.
 - `ARM32_THUMB`: 32-bit ARM, T32 instruction set aka Thumb-2.
-  - Tested on: Linux, NETBSD.
+  - Tested on Linux, NETBSD.
 - `ARM64`: 64-bit ARM aka AArch64.
-  - Tested on: NetBSD, OpenBSD.
+  - Tested on NetBSD, OpenBSD.
 - `PPC32`: 32-bit PowerPC.
-  - Tested on: Mac OS X Leopard.
+  - Tested on Mac OS X Leopard.
 - `RISCV64`: 64-bit RISC-V.
-  - Tested on: Linux.
-- `X86_32_ATT` and `X86_32_INTEL`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax and Intel syntax).
-  - Tested on: OpenBSD, Linux.
-- `X86_64_ATT` and `X86_64_INTEL`: x86_64 aka AMD64 (AT&T syntax and Intel syntax).
-  - Tested on: Linux, FreeBSD.
+  - Tested on Linux.
+- `X86_32_GAS_ATT`, `X86_32_GAS_INTEL`, `X86_32_NASM`: IA-32 aka i386 aka 32-bit x86 (AT&T syntax as used by GAS, Intel syntax as used by GAS, Intel syntax as used by NASM).
+  - Tested on OpenBSD, occasionally tested on Linux.
+- `X86_64_GAS_ATT`, `X86_64_GAS_INTEL`, `X86_64_NASM`: x86_64 aka AMD64 (AT&T syntax as used by GAS, Intel syntax as used by GAS, Intel syntax as used by NASM).
+  - Tested on Linux, occasionally tested on FreeBSD.
 
-Supported assemblers are GAS and the LLVM integrated assembler.
+Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For every other target, use GAS or the LLVM integrated assembler. They are almost perfectly compatible, so we don't differentiate between them.
+
+Supported linkers are GNU `ld` and LLVM's `lld`.
 
 ## Requirements
 
@@ -60,7 +62,7 @@ Example usage:
 
 ```pycon
 >>> from budivelnyk import bf_to_asm, Target
->>> asm = bf_to_asm("+++>--", target=Target.X86_64_INTEL)
+>>> asm = bf_to_asm("+++>--")
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -77,7 +79,7 @@ run:
 #endif
 ```
 
-You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that can run on your hardware with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`.
+You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that are likely to run on your machine with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`. On an AMD64 machine, the default target is `X86_64_GAS_INTEL`.
 
 For convenience, there is also `bf_file_to_asm_file` that accepts input and output paths:
 

@@ -9,9 +9,9 @@ from .arm64 import generate_arm64
 from .ppc32 import generate_ppc32
 from .riscv64 import generate_riscv64
 from .x86_32_att import generate_x86_32_att
-from .x86_32_intel import generate_x86_32_intel
+from .x86_32_intel import generate_x86_32_intel # TODO
 from .x86_64_att import generate_x86_64_att
-from .x86_64_intel import generate_x86_64_intel
+from .x86_64_intel import generate_x86_64_gas_intel, generate_x86_64_nasm
 
 # platform.machine can be not specific enough on NetBSD,
 # platform.processor can be empty on Linux, so we have
@@ -22,11 +22,11 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
         case "armv7l":
             return (Target.ARM32_THUMB, Target.ARM32)
         case "i686":
-            return (Target.X86_32_INTEL, Target.X86_32_ATT)
+            return (Target.X86_32_GAS_INTEL, Target.X86_32_GAS_ATT, Target.X86_64_NASM)
         case "riscv64":
             return (Target.RISCV64,)
         case "x86_64":
-            return (Target.X86_64_INTEL, Target.X86_64_ATT)
+            return (Target.X86_64_GAS_INTEL, Target.X86_64_GAS_ATT, Target.X86_64_NASM)
         case _:
             raise NotImplementedError(f"Linux on {machine} is not supported")
 
@@ -40,7 +40,7 @@ def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
         case "earmv7hf":  # tested with Net
             return (Target.ARM32_THUMB, Target.ARM32)
         case "i386":  # tested with Open
-            return (Target.X86_32_INTEL, Target.X86_32_ATT)
+            return (Target.X86_32_GAS_INTEL, Target.X86_32_GAS_ATT, Target.X86_32_NASM)
         case "powerpc":  # tested with Mac OS X
             return (Target.PPC32,)
         case _:
@@ -53,10 +53,12 @@ class Target(enum.Enum):
     ARM64 = enum.auto()
     PPC32 = enum.auto()
     RISCV64 = enum.auto()
-    X86_32_ATT = enum.auto()
-    X86_32_INTEL = enum.auto()
-    X86_64_ATT = enum.auto()
-    X86_64_INTEL = enum.auto()
+    X86_32_GAS_ATT = enum.auto()
+    X86_32_GAS_INTEL = enum.auto()
+    X86_32_NASM = enum.auto()
+    X86_64_GAS_ATT = enum.auto()
+    X86_64_GAS_INTEL = enum.auto()
+    X86_64_NASM = enum.auto()
 
     @staticmethod
     def candidates() -> tuple[Target, ...]:
@@ -86,13 +88,15 @@ class Target(enum.Enum):
                 yield from generate_ppc32(intermediate)
             case Target.RISCV64:
                 yield from generate_riscv64(intermediate)
-            case Target.X86_32_ATT:
+            case Target.X86_32_GAS_ATT:
                 yield from generate_x86_32_att(intermediate)
-            case Target.X86_32_INTEL:
+            case Target.X86_32_GAS_INTEL:
                 yield from generate_x86_32_intel(intermediate)
-            case Target.X86_64_ATT:
+            case Target.X86_64_GAS_ATT:
                 yield from generate_x86_64_att(intermediate)
-            case Target.X86_64_INTEL:
-                yield from generate_x86_64_intel(intermediate)
+            case Target.X86_64_GAS_INTEL:
+                yield from generate_x86_64_gas_intel(intermediate)
+            case Target.X86_64_NASM:
+                yield from generate_x86_64_nasm(intermediate)
             case _:
                 raise RuntimeError(f"unhandled target {self}, this is a bug")
