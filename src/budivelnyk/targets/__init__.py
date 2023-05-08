@@ -9,7 +9,7 @@ from .arm64 import generate_arm64
 from .ppc32 import generate_ppc32
 from .riscv64 import generate_riscv64
 from .x86_32_att import generate_x86_32_att
-from .x86_32_intel import generate_x86_32_intel # TODO
+from .x86_32_intel import generate_x86_32_gas_intel, generate_x86_32_nasm
 from .x86_64_att import generate_x86_64_att
 from .x86_64_intel import generate_x86_64_gas_intel, generate_x86_64_nasm
 
@@ -91,7 +91,9 @@ class Target(enum.Enum):
             case Target.X86_32_GAS_ATT:
                 yield from generate_x86_32_att(intermediate)
             case Target.X86_32_GAS_INTEL:
-                yield from generate_x86_32_intel(intermediate)
+                yield from generate_x86_32_gas_intel(intermediate)
+            case Target.X86_32_NASM:
+                yield from generate_x86_32_nasm(intermediate)
             case Target.X86_64_GAS_ATT:
                 yield from generate_x86_64_att(intermediate)
             case Target.X86_64_GAS_INTEL:

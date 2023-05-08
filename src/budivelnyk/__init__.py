@@ -77,8 +77,10 @@ def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.sugg
         bf_to_asm_file(bf_code, asm_path, target=target)
         # assemble:
         if nasm:
+            bits = 64 if target == Target.X86_64_NASM else 32
+            FORMAT = "-felf" + str(bits)
             LINUX = ["-DLINUX"] if system() == "Linux" else []
-            run_and_maybe_fail("nasm", "-felf64", asm_path, "-o", object_path, *LINUX)
+            run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path, *LINUX)
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:

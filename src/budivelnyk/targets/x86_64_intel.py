@@ -95,6 +95,7 @@ def _generate_epilogue_gas() -> Iterator[str]:
 def _generate_epilogue_nasm() -> Iterator[str]:
     yield '    ret'
     yield ''
+    yield '; assemble with -DLINUX if you want it to link on Linux'
     yield '%ifdef LINUX'
     yield '    section .note.GNU-stack progbits'
     yield '%endif'
