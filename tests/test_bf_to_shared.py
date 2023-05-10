@@ -1,6 +1,6 @@
 import sys
 from ctypes import CDLL
-from subprocess import run, Popen, PIPE
+from subprocess import run, Popen, PIPE, TimeoutExpired
 import pytest
 from budivelnyk import bf_to_shared, bf_file_to_shared, Target, create_tape
 from helpers import library_path
@@ -57,9 +57,13 @@ def test_tee(target, library_path):
     call_tee = [sys.executable, "tests/py/call_tee.py", library_path]
     with Popen(call_tee, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"123\n456"
-        output, error = process.communicate(input=input, timeout=3) # TODO: timeout doesn't work
-        assert output == input + b"\0" # because we treat EOF as 0
-        assert not error
+        try:
+            output, error = process.communicate(input=input, timeout=3)
+            assert output == input + b"\0" # because we treat EOF as 0
+            assert not error
+        except TimeoutExpired as e:
+            process.kill()
+            assert False, f"process still runs after {e.timeout} s"
 
 
 @pytest.mark.parametrize("target", targets)
@@ -86,6 +90,9 @@ def test_consecutive_reads(target, library_path):
     call_reads = [sys.executable, "tests/py/call_reads.py", library_path]
     with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
         input = b"abc"
-        output, error = process.communicate(input=input, timeout=3)
-        assert not output
-        assert not error
+        try:
+            output, error = process.communicate(input=input, timeout=3)
+            assert not output and not error
+        except TimeoutExpired as e:
+            process.kill()
+            assert False, f"process still runs after {e.timeout} s"
