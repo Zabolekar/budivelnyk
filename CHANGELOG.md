@@ -1,6 +1,11 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.0.7
+
+- NASM support on i386 and AMD64
+- 32-bit PowerPC support
+
 # 0.0.6
 
 - `bf_to_function` and experimental JIT on x86_64 Linux.
