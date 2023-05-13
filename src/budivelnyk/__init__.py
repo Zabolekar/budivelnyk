@@ -17,7 +17,6 @@ from .targets import Target
 from .targets.jit import intermediate_to_function, jit_implemented
 
 
-# TODO: document
 def bf_to_function(bf_code: str, *, use_jit: bool = True) -> Callable[[Tape], None]:
     if use_jit:
         intermediate: AST = bf_to_intermediate(bf_code)

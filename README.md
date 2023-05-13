@@ -67,7 +67,7 @@ Example usage:
 
 ```pycon
 >>> from budivelnyk import bf_to_asm, Target
->>> asm = bf_to_asm("+++>--")
+>>> asm = bf_to_asm("+++>--", target=Target.X86_64_GAS_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -84,7 +84,7 @@ run:
 #endif
 ```
 
-You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that are likely to run on your machine with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`. On an AMD64 machine, the default target is `X86_64_GAS_INTEL`.
+You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that are likely to run on your machine with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`. For example, on an AMD64 machine, the default target is `X86_64_GAS_INTEL`.
 
 For convenience, there is also `bf_file_to_asm_file` that accepts input and output paths:
 
@@ -224,9 +224,9 @@ my_lib.run(b"test")
 
 If your code doesn't modify the tape, it may work, but do not rely on this. **Do not ever** do this if your code modifies the tape. This will cause bizarre bugs, e.g. literals like `b"\0"` evaluating to `b"\xff"`. The Python interpreter expects all `bytes` objects to be immutable and reuses them.
 
-## JIT Compilation (Experimental)
+## `bf_to_function` and Experimental JIT Compilation
 
-On x86_64 Linux, the `bf_to_function` function generates immediately runnable machine code without an external assembler or linker:
+Use `bf_to_function` to directly create a Python function from bf code:
 
 ```pycon
 >>> import budivelnyk as bd
@@ -237,7 +237,7 @@ On x86_64 Linux, the `bf_to_function` function generates immediately runnable ma
 [11, 0]
 ```
 
-On other platforms, `bf_to_function` *does* use the external assembler and linker just like `bf_to_shared` does.
+When you call `bf_to_function` with `use_jit=True` (the default), it generates runnable machine code in memory without using an external assembler or linker. This currently only works on x86_64 Linux. On every other platform, `bf_to_function` should be called with `use_jit=False`, in which case it *does* use an external assembler and linker.
 
 ## Optimisations
 
