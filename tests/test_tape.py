@@ -6,8 +6,7 @@ from helpers import library_path, skip_if_jit_not_implemented
 
 @pytest.fixture
 def nop_in_dll(tmp_path, library_path):
-    bd.bf_to_shared("", library_path)
-    return ctypes.CDLL(library_path).run
+    return bd.bf_to_function("", use_jit=False)
 
 
 @pytest.fixture
@@ -16,14 +15,14 @@ def nop_in_memory():
 
 
 def test_dll_with_our_tape(nop_in_dll):
-    tape = bd.create_tape(1)
+    tape = bd.make_tape(1)
     assert tape._type_ is ctypes.c_ubyte
     nop_in_dll(tape)
 
 
 @skip_if_jit_not_implemented
 def test_jit_with_our_tape(nop_in_memory):
-    tape = bd.create_tape(1)
+    tape = bd.make_tape(1)
     assert tape._type_ is ctypes.c_ubyte
     nop_in_memory(tape)
 
@@ -40,7 +39,7 @@ def test_jit_with_bytes(nop_in_memory):
         nop_in_memory(tape)
     with pytest.raises(TypeError, match="not writable"):  # TODO: should it be that way? nop doesn't write...
         nop_in_memory(bd.as_tape(tape, size=1))
-    nop_in_memory(bd.create_tape(tape))
+    nop_in_memory(bd.make_tape(tape))
 
 
 def test_dll_with_c_bytes(nop_in_dll):

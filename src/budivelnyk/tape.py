@@ -5,7 +5,7 @@ from typing import TypeAlias, no_type_check
 Tape: TypeAlias = ctypes.Array[ctypes.c_ubyte]
 
 
-def create_tape(cells: int | bytes) -> Tape:
+def make_tape(cells: int | bytes) -> Tape:
     if isinstance(cells, int):
         size = cells
         return (ctypes.c_ubyte * size)()

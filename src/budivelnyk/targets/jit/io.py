@@ -1,12 +1,12 @@
 import sys
 import ctypes
 
-from ...tape import create_tape
+from ...tape import make_tape
 
 
 def _reinterpret_pointer(pointer) -> bytes:  # type: ignore
     pointer_size = ctypes.sizeof(pointer)
-    array = create_tape(pointer_size)
+    array = make_tape(pointer_size)
     ctypes.memmove(array, ctypes.byref(pointer), pointer_size)
     return bytes(array)
 

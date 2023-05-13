@@ -170,19 +170,19 @@ Memory for the tape has to be allocated by the caller. This has the following ad
 
 ## Tapes in Python
 
-The proper way to create a tape is to use the `create_tape` function we provide,
+The proper way to create a tape is to use the `make_tape` function we provide,
 which returns a mutable `ctypes` array of unsigned bytes:
 
 ```python
 from ctypes import CDLL
-from budivelnyk import create_tape
+from budivelnyk import make_tape
 
 mylib = CDLL("./mylib.so")
-tape = create_tape(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
+tape = make_tape(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
 my_lib.run(tape)
 
 my_other_lib = CDLL("./myotherlib.so")
-other_tape = create_tape(4)  # creates a tape with 4 cells, initialized to zero
+other_tape = make_tape(4)  # creates a tape with 4 cells, initialized to zero
 my_other_lib.run(other_tape)
 ```
 
@@ -230,7 +230,7 @@ On x86_64 Linux, the `bf_to_function` function generates immediately runnable ma
 
 ```pycon
 >>> import budivelnyk as bd
->>> tape = bd.create_tape(bytes([5,6]))
+>>> tape = bd.make_tape(bytes([5,6]))
 >>> add = bd.bf_to_function(">[-<+>]")
 >>> add(tape)
 >>> tape[:]

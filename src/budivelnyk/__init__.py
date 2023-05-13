@@ -11,14 +11,14 @@ from typing import Callable, Iterator
 from tempfile import NamedTemporaryFile
 
 from .helpers import run_and_maybe_fail
-from .tape import Tape, create_tape, as_tape
+from .tape import Tape, make_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
 from .targets.jit import intermediate_to_function, jit_implemented
 
 
 # TODO: document
-def bf_to_function(bf_code: str, use_jit: bool = True) -> Callable[[Tape], None]:
+def bf_to_function(bf_code: str, *, use_jit: bool = True) -> Callable[[Tape], None]:
     if use_jit:
         intermediate: AST = bf_to_intermediate(bf_code)
         return intermediate_to_function(intermediate)
