@@ -8,14 +8,6 @@ from ...intermediate import AST
 from .x86_64 import generate_x86_64
 
 
-def jit_implemented() -> bool:
-    try:
-        _find_jit_compiler()
-        return True
-    except NotImplementedError:
-        return False
-
-
 def _find_jit_compiler() -> Callable[[AST], bytes]:
     # see also dispatching code in targets/__init__.py
 
@@ -28,6 +20,14 @@ def _find_jit_compiler() -> Callable[[AST], bytes]:
         raise NotImplementedError(f"JIT is not implemented for Linux on {machine}")
 
     return generate_x86_64
+
+
+jit_implemented: bool
+try:
+    _find_jit_compiler()
+    jit_implemented = True
+except NotImplementedError:
+    jit_implemented = False
 
 
 def _intermediate_to_machine_code(intermediate: AST) -> bytes:
