@@ -26,7 +26,9 @@ def bf_to_function(bf_code: str, *, use_jit: bool = True) -> Callable[[Tape], No
         with NamedTemporaryFile() as library_file:
             library_path = library_file.name
             bf_to_shared(bf_code, library_path)
-            return CDLL(library_path).run
+            func = CDLL(library_path).run
+            func.restype = None
+            return func
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:

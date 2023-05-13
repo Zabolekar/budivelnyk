@@ -41,16 +41,12 @@ def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
     memory.write(code)
     array_t = ctypes.c_byte * size
     array_view = array_t.from_buffer(memory)
-    return ctypes.cast(array_view, _functype)
+    return ctypes.cast(array_view, ctypes.CFUNCTYPE(None))
 
 
 def intermediate_to_function(intermediate: AST) -> Callable[[Tape], None]:
     code: bytes = _intermediate_to_machine_code(intermediate)
     return _machine_code_to_function(code)
-
-
-_ubyte_p = ctypes.POINTER(ctypes.c_ubyte)
-_functype = ctypes.CFUNCTYPE(None, _ubyte_p)
 
 
 def _executable_memory(size: int) -> mmap.mmap:

@@ -9,9 +9,11 @@ def make_tape(cells: int | bytes) -> Tape:
     if isinstance(cells, int):
         size = cells
         return (ctypes.c_ubyte * size)()
-    else:
+    elif isinstance(cells, bytes):
         size = len(cells)
         return (ctypes.c_ubyte * size).from_buffer_copy(cells)
+    else:
+        raise TypeError(f"expected int or bytes, got {type(cells).__name__}")
 
 
 @no_type_check
