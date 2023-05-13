@@ -8,7 +8,7 @@ from ...intermediate import AST
 from .x86_64 import generate_x86_64
 
 
-def jit_compiler_implemented() -> bool:
+def jit_implemented() -> bool:
     try:
         _find_jit_compiler()
         return True

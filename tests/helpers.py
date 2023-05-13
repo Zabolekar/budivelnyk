@@ -1,9 +1,9 @@
 from pathlib import PosixPath
-from budivelnyk.targets.jit import jit_compiler_implemented
+from budivelnyk.targets.jit import jit_implemented
 import pytest
 
 
-jit_not_implemented = not jit_compiler_implemented()
+jit_not_implemented = not jit_implemented()
 skip_if_jit_not_implemented = pytest.mark.skipif(
     jit_not_implemented,
     reason="JIT compiler not implemented for this platform"

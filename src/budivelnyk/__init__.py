@@ -14,13 +14,13 @@ from .helpers import run_and_maybe_fail
 from .tape import Tape, create_tape, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
-from .targets.jit import intermediate_to_function, jit_compiler_implemented
+from .targets.jit import intermediate_to_function, jit_implemented
 
 
 class UseJIT(enum.Enum):
     TRUE = enum.auto()  # attempt to use, raise exception if not implemented
     FALSE = enum.auto()  # do not attempt to use
-    IF_AVAILABLE = enum.auto()  # check whether implemented, use if implemented
+    IF_IMPLEMENTED = enum.auto()  # check whether implemented, use if implemented
 
     def __bool__(self) -> bool:
         match self:
@@ -28,13 +28,12 @@ class UseJIT(enum.Enum):
                 return True
             case UseJIT.FALSE:
                 return False
-            case UseJIT.IF_AVAILABLE:
-                return jit_compiler_implemented()
+            case UseJIT.IF_IMPLEMENTED:
+                return jit_implemented()
 
 
-# TODO: some tape tests fail without JIT due to less strict type requirements
 # TODO: document
-def bf_to_function(bf_code: str, use_jit: UseJIT = UseJIT.IF_AVAILABLE) -> Callable[[Tape], None]:    
+def bf_to_function(bf_code: str, use_jit: UseJIT = UseJIT.IF_IMPLEMENTED) -> Callable[[Tape], None]:    
     if use_jit:
         intermediate: AST = bf_to_intermediate(bf_code)
         return intermediate_to_function(intermediate)

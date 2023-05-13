@@ -36,9 +36,9 @@ def test_dll_with_bytes(nop_in_dll):
 @skip_if_jit_not_implemented
 def test_jit_with_bytes(nop_in_memory):
     tape = b"\x00"
-    with pytest.raises(ctypes.ArgumentError):
+    with pytest.raises(ctypes.ArgumentError): # TODO: different behaviour with jit and without (without is less strict)
         nop_in_memory(tape)
-    with pytest.raises(TypeError, match="not writable"):
+    with pytest.raises(TypeError, match="not writable"):  # TODO: should it be that way? nop doesn't write...
         nop_in_memory(bd.as_tape(tape, size=1))
     nop_in_memory(bd.create_tape(tape))
 
