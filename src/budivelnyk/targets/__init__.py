@@ -36,7 +36,7 @@ def _bsd_candidates(system: str, processor: str) -> tuple[Target, ...]:
         case "aarch64":  # tested with Net and Open
             return (Target.ARM64,)
         case "amd64":  # tested with Free
-            return (Target.X86_64_INTEL, Target.X86_64_ATT)
+            return (Target.X86_64_GAS_INTEL, Target.X86_64_GAS_ATT, Target.X86_64_NASM)
         case "earmv7hf":  # tested with Net
             return (Target.ARM32_THUMB, Target.ARM32)
         case "i386":  # tested with Open
