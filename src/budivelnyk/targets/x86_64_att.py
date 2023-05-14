@@ -17,6 +17,14 @@ def _generate_prologue() -> Iterator[str]:
     yield 'run:'
 
 
+def _generate_epilogue() -> Iterator[str]:
+    yield '    ret'
+    yield ''
+    yield '#ifdef LINUX'
+    yield '    .section .note.GNU-stack, "", @progbits'
+    yield '#endif'
+
+
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
@@ -61,12 +69,3 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    jmp    start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield '    ret'
-    yield ''
-    yield '#ifdef LINUX'
-    yield '    .section .note.GNU-stack, "", @progbits'
-    yield '#endif'
-

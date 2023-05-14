@@ -22,6 +22,13 @@ def _generate_prologue() -> Iterator[str]:
     yield '    mov    x29, sp'
     yield '    str    x19, [sp, 16]'  # x19 is the first callee-saved register
 
+
+def _generate_epilogue() -> Iterator[str]:
+    yield '    ldr    x19, [sp, 16]'
+    yield '    ldp    x29, x30, [sp], 32'
+    yield '    ret'
+
+
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
@@ -60,10 +67,3 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    b      start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield '    ldr    x19, [sp, 16]'
-    yield '    ldp    x29, x30, [sp], 32'
-    yield '    ret'
-

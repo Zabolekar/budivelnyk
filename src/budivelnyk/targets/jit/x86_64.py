@@ -22,6 +22,12 @@ def _generate_prologue() -> Iterator[bytes]:
     yield b("49 BD", encoded_read_char)     # movabs r13, encoded_read_char
 
 
+def _generate_epilogue() -> Iterator[bytes]:
+    yield b("41 5D")   # pop r13
+    yield b("41 5C")   # pop r12
+    yield b("C3")      # ret
+
+
 def _generate_body(intermediate: AST) -> Iterator[bytes]:
     for node in intermediate:
         match node:
@@ -74,9 +80,3 @@ def _generate_body(intermediate: AST) -> Iterator[bytes]:
                 yield b("74", start_to_end)   # je end
                 yield compiled_body
                 yield b("EB", end_to_start)   # jmp start
-
-
-def _generate_epilogue() -> Iterator[bytes]:
-    yield b("41 5D")   # pop r13
-    yield b("41 5C")   # pop r12
-    yield b("C3")      # ret

@@ -31,6 +31,23 @@ def _generate_prologue_nasm() -> Iterator[str]:
     yield 'run:'
 
 
+def _generate_epilogue_gas() -> Iterator[str]:
+    yield '    ret'
+    yield ''
+    yield '#ifdef LINUX'
+    yield '    .section .note.GNU-stack, "", @progbits'
+    yield '#endif'
+
+
+def _generate_epilogue_nasm() -> Iterator[str]:
+    yield '    ret'
+    yield ''
+    yield '; assemble with -DLINUX if you want it to link on Linux'
+    yield '%ifdef LINUX'
+    yield '    section .note.GNU-stack progbits'
+    yield '%endif'
+
+
 def _generate_body(intermediate: AST, nasm: bool, parent_label: str='') -> Iterator[str]:
     if nasm:
         ptr = ""
@@ -82,20 +99,3 @@ def _generate_body(intermediate: AST, nasm: bool, parent_label: str='') -> Itera
                 yield f'    jmp   start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue_gas() -> Iterator[str]:
-    yield '    ret'
-    yield ''
-    yield '#ifdef LINUX'
-    yield '    .section .note.GNU-stack, "", @progbits'
-    yield '#endif'
-
-
-def _generate_epilogue_nasm() -> Iterator[str]:
-    yield '    ret'
-    yield ''
-    yield '; assemble with -DLINUX if you want it to link on Linux'
-    yield '%ifdef LINUX'
-    yield '    section .note.GNU-stack progbits'
-    yield '%endif'

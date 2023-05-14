@@ -25,6 +25,10 @@ def _generate_prologue() -> Iterator[str]:
     yield '    movl   8(%esp), %eax'
 
 
+def _generate_epilogue() -> Iterator[str]:
+    yield '    popl   %ebx'
+    yield '    ret'
+
 
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
@@ -80,9 +84,3 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    jmp    start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield '    popl   %ebx'
-    yield '    ret'
-

@@ -25,6 +25,14 @@ def _generate_prologue() -> Iterator[str]:
     yield '    stwu   r1, -80(r1)'
     
 
+def _generate_epilogue() -> Iterator[str]:
+    yield '    addi   r1, r1, 80'
+    yield '    lwz    r30, -8(r1)'
+    yield '    lwz    r0, 8(r1)'
+    yield '    mtlr   r0'
+    yield '    blr'
+
+
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
@@ -66,11 +74,3 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    b      start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield '    addi   r1, r1, 80'
-    yield '    lwz    r30, -8(r1)'
-    yield '    lwz    r0, 8(r1)'
-    yield '    mtlr   r0'
-    yield '    blr'

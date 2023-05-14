@@ -25,6 +25,11 @@ def _generate_prologue(*, thumb: bool) -> Iterator[str]:
     yield 'run:'
     yield  '    push   {r4, lr}'  # r4 is the first callee-saved register
 
+
+def _generate_epilogue() -> Iterator[str]:
+    yield  '    pop    {r4, pc}'
+
+
 def _generate_body(intermediate: AST, parent_label: str='', *, thumb: bool) -> Iterator[str]:
     loop_id = 0
     for node in intermediate:
@@ -70,8 +75,3 @@ def _generate_body(intermediate: AST, parent_label: str='', *, thumb: bool) -> I
                 yield f'    b      start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield  '    pop    {r4, pc}'
-

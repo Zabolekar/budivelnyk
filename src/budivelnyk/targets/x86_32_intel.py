@@ -48,6 +48,11 @@ def _generate_prologue_nasm() -> Iterator[str]:
     yield '    mov   eax, dword [esp + 8]'
 
 
+def _generate_epilogue() -> Iterator[str]:
+    yield '    pop   ebx'
+    yield '    ret'
+
+
 def _generate_body(intermediate: AST, nasm: bool, parent_label: str='') -> Iterator[str]:
     if nasm:
         ptr = ""
@@ -108,9 +113,3 @@ def _generate_body(intermediate: AST, nasm: bool, parent_label: str='') -> Itera
                 yield f'    jmp   start{label}'
                 yield f'end{label}:'
                 loop_id += 1
-
-
-def _generate_epilogue() -> Iterator[str]:
-    yield '    pop   ebx'
-    yield '    ret'
-
