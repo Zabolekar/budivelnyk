@@ -76,7 +76,11 @@ class Target(enum.Enum):
         return Target.candidates()[0]
 
 
-    def intermediate_to_asm(self, intermediate: AST) -> Iterator[str]:
+    def intermediate_to_asm(self, intermediate: AST, linux_syscalls: bool) -> Iterator[str]:
+        if linux_syscalls:
+            if self not in (Target.X86_64_GAS_ATT, Target.X86_64_GAS_INTEL, Target.X86_64_NASM):
+                raise NotImplementedError("linux_syscalls=True is only implemented for x86_64")
+
         match self:
             case Target.ARM32:
                 yield from generate_arm32(intermediate, thumb=False)
@@ -95,10 +99,10 @@ class Target(enum.Enum):
             case Target.X86_32_NASM:
                 yield from generate_x86_32_nasm(intermediate)
             case Target.X86_64_GAS_ATT:
-                yield from generate_x86_64_att(intermediate)
+                yield from generate_x86_64_att(intermediate, linux_syscalls)
             case Target.X86_64_GAS_INTEL:
-                yield from generate_x86_64_gas_intel(intermediate)
+                yield from generate_x86_64_gas_intel(intermediate, linux_syscalls)
             case Target.X86_64_NASM:
-                yield from generate_x86_64_nasm(intermediate)
+                yield from generate_x86_64_nasm(intermediate, linux_syscalls)
             case _:
                 raise RuntimeError(f"unhandled target {self}, this is a bug")

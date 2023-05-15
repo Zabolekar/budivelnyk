@@ -1,6 +1,10 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.0.8
+
+- Syscalls (and not only libc calls) supported for Linux on x86_64
+
 # 0.0.7
 
 - NASM support on i386 and AMD64

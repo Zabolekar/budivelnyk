@@ -30,9 +30,9 @@ except NotImplementedError:
     jit_implemented = False
 
 
-def _intermediate_to_machine_code(intermediate: AST) -> bytes:
+def _intermediate_to_machine_code(intermediate: AST, linux_syscalls: bool) -> bytes:
     compiler = _find_jit_compiler()
-    return compiler(intermediate)
+    return compiler(intermediate, linux_syscalls)
 
 
 def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
@@ -44,8 +44,8 @@ def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
     return ctypes.cast(array_view, ctypes.CFUNCTYPE(None))
 
 
-def intermediate_to_function(intermediate: AST) -> Callable[[Tape], None]:
-    code: bytes = _intermediate_to_machine_code(intermediate)
+def intermediate_to_function(intermediate: AST, linux_syscalls: bool) -> Callable[[Tape], None]:
+    code: bytes = _intermediate_to_machine_code(intermediate, linux_syscalls)
     return _machine_code_to_function(code)
 
 

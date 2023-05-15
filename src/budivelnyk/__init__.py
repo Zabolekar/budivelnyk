@@ -17,39 +17,39 @@ from .targets import Target
 from .targets.jit import intermediate_to_function, jit_implemented
 
 
-def bf_to_function(bf_code: str, *, use_jit: bool = True) -> Callable[[Tape], None]:
+def bf_to_function(bf_code: str, *, use_jit: bool = True, linux_syscalls: bool = False) -> Callable[[Tape], None]:
     if use_jit:
         intermediate: AST = bf_to_intermediate(bf_code)
-        return intermediate_to_function(intermediate)
+        return intermediate_to_function(intermediate, linux_syscalls=linux_syscalls)
     else:
         with NamedTemporaryFile() as library_file:
             library_path = library_file.name
-            bf_to_shared(bf_code, library_path)
+            bf_to_shared(bf_code, library_path, linux_syscalls=linux_syscalls)
             func = CDLL(library_path).run
             func.restype = None
             return func
 
 
-def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:
+def bf_to_asm(bf_code: str, *, target: Target = Target.suggest(), linux_syscalls: bool = False) -> Iterator[str]:
     intermediate: AST = bf_to_intermediate(bf_code)
-    yield from target.intermediate_to_asm(intermediate)
+    yield from target.intermediate_to_asm(intermediate, linux_syscalls=linux_syscalls)
 
 
-def bf_to_asm_file(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    lines = bf_to_asm(bf_code, target=target)
+def bf_to_asm_file(bf_code: str, output_path: str, *, target: Target = Target.suggest(), linux_syscalls: bool = False) -> None:
+    lines = bf_to_asm(bf_code, target=target, linux_syscalls=linux_syscalls)
 
     with open(output_path, 'w') as output_file:
         print(*lines, sep="\n", file=output_file)
 
 
-def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest(), linux_syscalls: bool = False) -> None:
     with open(input_path) as input_file:
         bf_code = input_file.read()
 
-    bf_to_asm_file(bf_code, output_path, target=target)
+    bf_to_asm_file(bf_code, output_path, target=target, linux_syscalls=linux_syscalls)
 
 
-def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest(), linux_syscalls: bool = False) -> None:
     nasm: bool = target in (Target.X86_32_NASM, Target.X86_64_NASM)
     if not shutil.which("cc"):
         raise RuntimeError("cc not found")
@@ -59,7 +59,7 @@ def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.sugg
     with (NamedTemporaryFile(suffix=".s") as asm_file,
           NamedTemporaryFile(suffix=".o") as object_file):
         asm_path, object_path = asm_file.name, object_file.name
-        bf_to_asm_file(bf_code, asm_path, target=target)
+        bf_to_asm_file(bf_code, asm_path, target=target, linux_syscalls=linux_syscalls)
         # assemble:
         if nasm:
             bits = 64 if target == Target.X86_64_NASM else 32
@@ -73,8 +73,8 @@ def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.sugg
         run_and_maybe_fail("cc", SHARED, object_path, "-o", output_path)
 
 
-def bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None:
+def bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest(), linux_syscalls: bool = False) -> None:
     with open(input_path) as input_file:
         bf_code = input_file.read()
 
-    bf_to_shared(bf_code, output_path, target=target)
+    bf_to_shared(bf_code, output_path, target=target, linux_syscalls=linux_syscalls)

@@ -1,4 +1,5 @@
 import sys
+import platform
 from ctypes import CDLL
 from subprocess import run, Popen, PIPE, TimeoutExpired
 import pytest
@@ -7,12 +8,14 @@ from helpers import library_path
 
 
 targets = Target.candidates()
+syscalls = (False, True) if platform.system() == "Linux" else (False,)
 
 
 @pytest.mark.parametrize("target", targets)
-def test_increment_string(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_increment_string(target, syscalls, library_path):
     bf = "[+>]"
-    bf_to_shared(bf, library_path, target=target)
+    bf_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     libinc = CDLL(library_path)
     buffer = make_tape(b"Gdkkn+\x1f`rrdlakx \x00")
@@ -21,9 +24,10 @@ def test_increment_string(target, library_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_zero_minus_one(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_zero_minus_one(target, syscalls, library_path):
     bf = "[-]-"
-    bf_to_shared(bf, library_path, target=target)
+    bf_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     libzmo = CDLL(library_path)
     a = make_tape(b"\x00")
@@ -39,9 +43,10 @@ def test_zero_minus_one(target, library_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_print_hello(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_print_hello(target, syscalls, library_path):
     bf = "tests/bf/hello.bf"
-    bf_file_to_shared(bf, library_path, target=target)
+    bf_file_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     call_hello = [sys.executable, "tests/py/call_hello.py", library_path]
     result = run(call_hello, capture_output=True)
@@ -50,9 +55,10 @@ def test_print_hello(target, library_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_tee(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_tee(target, syscalls, library_path):
     bf = "+[,.]"
-    bf_to_shared(bf, library_path, target=target)
+    bf_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     call_tee = [sys.executable, "tests/py/call_tee.py", library_path]
     with Popen(call_tee, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
@@ -67,9 +73,10 @@ def test_tee(target, library_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_composable_fibs(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_composable_fibs(target, syscalls, library_path):
     bf = "tests/bf/fibs.bf"
-    bf_file_to_shared(bf, library_path, target=target)
+    bf_file_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     libfibs = CDLL(library_path)
     buffer = make_tape(bytes([0, 1, 0, 0]))
@@ -83,9 +90,10 @@ def test_composable_fibs(target, library_path):
 
 
 @pytest.mark.parametrize("target", targets)
-def test_consecutive_reads(target, library_path):
+@pytest.mark.parametrize("syscalls", syscalls)
+def test_consecutive_reads(target, syscalls, library_path):
     bf = ",,,"
-    bf_to_shared(bf, library_path, target=target)
+    bf_to_shared(bf, library_path, target=target, linux_syscalls=syscalls)
 
     call_reads = [sys.executable, "tests/py/call_reads.py", library_path]
     with Popen(call_reads, stdin=PIPE, stdout=PIPE, stderr=PIPE) as process:
