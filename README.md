@@ -168,6 +168,11 @@ Memory for the tape has to be allocated by the caller. This has the following ad
 - If you know in advance that your code only requires a few bytes to run, you don't have to allocate a large tape.
 - You can pre-fill the tape with input data and inspect the modified tape after the bf program exits, which leads to composable bf programs.
 
+The disadvantages, compared to a hypothetical implementation that allocates more tape when needed, are:
+- If you *don't* know in advance how much tape your bf code requires, which is likely to be the case with most non-trivial programs, you have to guess. If your guess is too low, the program might crash, and if your guess is too high, you'll waste memory. Worse, the required tape length can't always be determined empirically because it might depend on user input.
+
+Note that some bf programs, e.g. `+[>+]`, require an infinitely long tape. They can't be executed on a real computer. Allocating more tape on demand won't solve that.
+
 ## Tapes in Python
 
 The proper way to create a tape is to use the `make_tape` function we provide,
