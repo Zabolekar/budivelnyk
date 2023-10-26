@@ -32,9 +32,11 @@ Supported targets are, in alphabetical order:
   - Tested on Linux, occasionally tested on FreeBSD.
 
 As you see, `X86_32_*` and `X86_64_*` each come in three variants. They generate the same instructions, but the syntax is different:
-- `X86_*_GAS_ATT` targets generate AT&T syntax used by GAS, e.g. `incb (%rdi)`.
-- `X86_*_GAS_INTEL` targets generate Intel syntax used by GAS, e.g. `inc byte ptr [rdi]`.
-- `X86_*_NASM` targets generate Intel syntax used by NASM, e.g. `inc byte [rdi]`.
+- `X86_*_GAS_ATT` targets generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
+- `X86_*_GAS_INTEL` targets generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
+- `X86_*_NASM` targets generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
+
+**Note:** GAS code in Intel syntax and NASM code look superficially similar, but there are important differences e.g. in how they handle the Global Offset Table.
 
 Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For every other target, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
 
