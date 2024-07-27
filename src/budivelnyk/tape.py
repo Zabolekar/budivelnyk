@@ -9,7 +9,7 @@ def tape_of_size(size: int) -> Tape:
     return (ctypes.c_ubyte * size)()
 
 
-def tape_with_contents(cells: bytes|bytearray|memoryview) -> Tape:
+def tape_with_contents(cells: bytes|bytearray) -> Tape:
     size = len(cells)
     return (ctypes.c_ubyte * size).from_buffer_copy(cells)
 

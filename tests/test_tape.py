@@ -25,8 +25,13 @@ def test_cast_int_array():
     assert correct_tape[:] == [12, 0, 0, 0, 34, 0, 0, 0, 56, 0, 0, 0]
 
 
-@pytest.mark.parametrize("TYPE", [bytes, bytearray, memoryview])
-def test_copy(TYPE):
-    x = TYPE(b"\x12\x34\x56")
+def test_copy_bytes():
+    x = b"\x12\x34\x56"
+    tape = bd.tape_with_contents(x)
+    assert tape[:] == [0x12, 0x34, 0x56]
+
+
+def test_copy_bytearray():
+    x = bytearray(b"\x12\x34\x56")
     tape = bd.tape_with_contents(x)
     assert tape[:] == [0x12, 0x34, 0x56]

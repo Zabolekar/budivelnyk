@@ -177,7 +177,7 @@ Note that some bf programs, e.g. `+[>+]`, require an infinitely long tape. They 
 
 ## Tapes in Python
 
-The proper way to create a tape is to use the `tape_of_size` and `tape_with_contents` functions we provide,
+The proper way to create a tape is to use the `tape_of_size(int) -> Tape` and `tape_with_contents(bytes|bytearray) -> Tape` functions we provide,
 which return a mutable `ctypes` array of unsigned bytes:
 
 ```python
