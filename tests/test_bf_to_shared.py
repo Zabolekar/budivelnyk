@@ -59,8 +59,8 @@ def test_tee(target, library_path):
         input = b"123\n456"
         try:
             output, error = process.communicate(input=input, timeout=3)
-            assert output == input + b"\0" # because we treat EOF as 0
             assert not error
+            assert output == input + b"\0" # because we treat EOF as 0
         except TimeoutExpired as e:
             process.kill()
             assert False, f"process still runs after {e.timeout} s"
