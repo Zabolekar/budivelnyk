@@ -177,19 +177,19 @@ Note that some bf programs, e.g. `+[>+]`, require an infinitely long tape. They 
 
 ## Tapes in Python
 
-The proper way to create a tape is to use the `make_tape` function we provide,
-which returns a mutable `ctypes` array of unsigned bytes:
+The proper way to create a tape is to use the `tape_of_size` and `tape_with_contents` functions we provide,
+which return a mutable `ctypes` array of unsigned bytes:
 
 ```python
 from ctypes import CDLL
 from budivelnyk import make_tape
 
 mylib = CDLL("./mylib.so")
-tape = make_tape(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
+tape = tape_with_contents(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
 my_lib.run(tape)
 
 my_other_lib = CDLL("./myotherlib.so")
-other_tape = make_tape(4)  # creates a tape with 4 cells, initialized to zero
+other_tape = tape_of_size(4)  # creates a tape with 4 cells, initialized to zero
 my_other_lib.run(other_tape)
 ```
 
@@ -237,7 +237,7 @@ Use `bf_to_function` to directly create a Python function from bf code:
 
 ```pycon
 >>> import budivelnyk as bd
->>> tape = bd.make_tape(bytes([5,6]))
+>>> tape = bd.tape_with_contents(bytes([5,6]))
 >>> add = bd.bf_to_function(">[-<+>]")
 >>> add(tape)
 >>> tape[:]

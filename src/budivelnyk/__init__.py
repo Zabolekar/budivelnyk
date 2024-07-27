@@ -11,7 +11,7 @@ from typing import Callable, Iterator
 from tempfile import NamedTemporaryFile
 
 from .helpers import run_and_maybe_fail
-from .tape import Tape, make_tape, as_tape
+from .tape import Tape, tape_of_size, tape_with_contents, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
 from .targets.jit import intermediate_to_function, jit_implemented

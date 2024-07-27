@@ -15,14 +15,14 @@ def nop_in_memory():
 
 
 def test_dll_with_our_tape(nop_in_dll):
-    tape = bd.make_tape(1)
+    tape = bd.tape_of_size(1)
     assert tape._type_ is ctypes.c_ubyte
     nop_in_dll(tape)
 
 
 @skip_if_jit_not_implemented
 def test_jit_with_our_tape(nop_in_memory):
-    tape = bd.make_tape(1)
+    tape = bd.tape_of_size(1)
     assert tape._type_ is ctypes.c_ubyte
     nop_in_memory(tape)
 
@@ -50,7 +50,7 @@ def test_dll_with_bytes(nop_in_dll):
 @skip_if_jit_not_implemented
 def test_jit_with_bytes(nop_in_memory):
     tape = b"\x00"
-    nop_in_memory(bd.make_tape(tape))
+    nop_in_memory(bd.tape_with_contents(tape))
 
 
 def test_dll_with_c_bytes(nop_in_dll):
