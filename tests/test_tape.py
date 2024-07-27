@@ -16,12 +16,10 @@ def test_cast_bytearray():
 
 
 def test_cast_int_array():
-    x = array('i', [12,34,56])
-    accidentally_wrong_tape = bd.as_tape(x)
-    intentionally_wrong_tape = bd.as_tape(x, 6)
-    correct_tape = bd.as_tape(x, 12)
-    assert accidentally_wrong_tape[:] == [12, 0, 0]
-    assert intentionally_wrong_tape[:] == [12, 0, 0, 0, 34, 0]
+    x = array('i', [12, 34, 56])
+    intentionally_wrong_tape = bd.as_tape(x, len(x))
+    correct_tape = bd.as_tape(x, len(x) * x.itemsize)
+    assert intentionally_wrong_tape[:] == [12, 0, 0]
     assert correct_tape[:] == [12, 0, 0, 0, 34, 0, 0, 0, 56, 0, 0, 0]
 
 

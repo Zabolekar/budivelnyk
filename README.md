@@ -193,20 +193,18 @@ other_tape = tape_of_size(4)  # creates a tape with 4 cells, initialized to zero
 my_other_lib.run(other_tape)
 ```
 
-The `as_tape` function can be used to wrap an existing mutable buffer, e.g. a `numpy` array:
+The `as_tape(buffer, size: int) -> Tape` function can be used to wrap an existing mutable buffer, e.g. a `numpy` array:
 
 ```python
 import numpy as np
 import budivelnyk as bd
 
 arr = np.array([1,0,0], dtype=np.uint8)
-tape = bd.as_tape(arr)
+tape = bd.as_tape(arr, 3)
 print(tape[:]) # [1, 0, 0]
 ```
 
-The function is very lenient and assumes that you know what you're doing. If your `numpy` array is e.g. not contiguous in memory or its elements are larger than 1 byte, there will be no error messages.
-
-By default, it uses the `len` of its argument as the tape size. If it's unsuitable, you can also provide a `size` argument. In the following example, the buffer contains 12 bytes, but its `len` is one:
+The function is very lenient and assumes that you know what you're doing. If your `numpy` array is e.g. not contiguous in memory, there will be no error messages. The `size` argument should be the tape length in bytes, which may be different from the the `len` of the buffer. In the following example, the buffer contains 12 bytes, but its `len` is one:
 
 ```pycon
 >>> import numpy as np
@@ -214,7 +212,7 @@ By default, it uses the `len` of its argument as the tape size. If it's unsuitab
 >>> arr = np.array([[1,0,-1]], dtype=np.int32)
 >>> bd.as_tape(arr)[:]
 [1]
->>> bd.as_tape(arr, 3 * 4)[:]
+>>> bd.as_tape(arr, arr.nbytes)[:]
 [1, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255]
 ```
 

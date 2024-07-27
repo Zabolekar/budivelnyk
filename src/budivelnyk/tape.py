@@ -15,7 +15,5 @@ def tape_with_contents(cells: bytes|bytearray) -> Tape:
 
 
 @no_type_check  # TODO: try collections.abc.Buffer with 3.12
-def as_tape(buffer, size=None) -> Tape:
-    if size is None:
-        size = len(buffer)
+def as_tape(buffer, size: int) -> Tape:
     return (ctypes.c_ubyte * size).from_buffer(buffer)
