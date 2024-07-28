@@ -11,6 +11,10 @@ from ...intermediate import AST
 from .x86_64 import generate_x86_64
 
 
+jit_implemented: bool = platform.system() == "Linux" and platform.machine() == "x86_64"
+# see also dispatching code in targets/__init__.py
+
+
 class UseJIT(Enum):
     LIBC = auto()
     SYSCALLS = auto()
@@ -21,32 +25,11 @@ class UseJIT(Enum):
         return UseJIT.SYSCALLS if jit_implemented else UseJIT.NO
 
 
-# TODO: don't abuse exceptions for control flow
-def _find_jit_compiler() -> Callable[[AST, bool], bytes]:
-    # see also dispatching code in targets/__init__.py
-
-    system = platform.system()
-    if system != "Linux":
-        raise NotImplementedError(f"JIT is not implemented for {system}")
-
-    machine = platform.machine()
-    if machine != "x86_64":
-        raise NotImplementedError(f"JIT is not implemented for Linux on {machine}")
-
-    return generate_x86_64
-
-
-jit_implemented: bool
-try:
-    _find_jit_compiler()
-    jit_implemented = True
-except NotImplementedError:
-    jit_implemented = False
-
-
 def _intermediate_to_machine_code(intermediate: AST, linux_syscalls: bool) -> bytes:
-    compiler = _find_jit_compiler()
-    return compiler(intermediate, linux_syscalls)
+    if jit_implemented:
+        return generate_x86_64(intermediate, linux_syscalls)
+    else:
+        raise NotImplementedError("JIT is only implemented for Linux on x86_64")
 
 
 def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
@@ -56,6 +39,7 @@ def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
     array_t = ctypes.c_byte * size
     array_view = array_t.from_buffer(memory)
     return ctypes.cast(array_view, ctypes.CFUNCTYPE(None))
+
 
 # TODO: restructure
 def intermediate_to_function(intermediate: AST, *, linux_syscalls: bool) -> Callable[[Tape], None]:
