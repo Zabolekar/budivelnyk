@@ -13,7 +13,7 @@ from .helpers import run_and_maybe_fail
 from .tape import Tape, tape_of_size, tape_with_contents, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
-from .targets.jit import intermediate_to_function, UseJIT
+from .targets.jit import intermediate_to_function, UseJIT, jit_implemented
 
 
 def bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]:

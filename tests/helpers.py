@@ -1,5 +1,4 @@
-from pathlib import PosixPath
-from budivelnyk.targets.jit import jit_implemented
+from budivelnyk import jit_implemented
 import pytest
 
 
