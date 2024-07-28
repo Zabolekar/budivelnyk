@@ -1,6 +1,11 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.0.8
+
+- Linux syscalls (as an alternative to libc calls) supported on x86_64
+- Different API for creating tapes and for the experimental JIT
+
 # 0.0.7
 
 - NASM support on i386 and AMD64

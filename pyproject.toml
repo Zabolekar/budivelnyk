@@ -1,7 +1,8 @@
 [project]
 name = "budivelnyk"
 description = "bf to asm compiler"
-version = "0.0.7"
+version = "0.0.8"
+requires-python = ">= 3.10"
 dependencies = [
 ]
 
