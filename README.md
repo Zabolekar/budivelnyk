@@ -30,8 +30,10 @@ Supported targets are, in alphabetical order:
   - Tested on OpenBSD, occasionally tested on Linux.
 - `X86_64_GAS_ATT`, `X86_64_GAS_INTEL`, `X86_64_NASM`: x86_64 aka AMD64.
   - Tested on Linux, occasionally tested on FreeBSD.
+- `X86_64_LINUX_SYSCALLS_GAS_ATT`, `X86_64_LINUX_SYSCALLS_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
+  - Linux only.
 
-As you see, `X86_32_*` and `X86_64_*` each come in three variants. They generate the same instructions, but the syntax is different:
+As you see, `X86_32_*`, `X86_64_*`, and `X86_64_LINUX_SYSCALLS_*` each come in three variants. They generate the same instructions, but the syntax is different:
 - `X86_*_GAS_ATT` targets generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
 - `X86_*_GAS_INTEL` targets generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
 - `X86_*_NASM` targets generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
@@ -242,7 +244,7 @@ Use `bf_to_function` to directly create a Python function from bf code:
 [11, 0]
 ```
 
-When you call `bf_to_function` with `use_jit=True` (the default), it generates runnable machine code in memory without using an external assembler or linker. This currently only works on x86_64 Linux. On every other platform, `bf_to_function` should be called with `use_jit=False`, in which case it *does* use an external assembler and linker.
+The function `bf_to_function` has an additional optional `use_jit` parameter. When called with `use_jit=UseJIT.SYSCALLS` (the default on Linux) or `use_jit=UseJIT.LIBC`, it generates runnable machine code in memory without using an external assembler or linker, in the first case with system calls and in the second case with calls to the C library. Both options currently only work on x86_64 Linux. When called with `use_jit=UseJIT.NO` (the default on every other platform), it falls back to producing temporary assembly files and processing them with an external assembler and linker.
 
 ## Optimisations
 

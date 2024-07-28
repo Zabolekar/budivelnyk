@@ -6,12 +6,12 @@ from helpers import library_path, skip_if_jit_not_implemented
 
 @pytest.fixture
 def nop_in_dll(tmp_path, library_path):
-    return bd.bf_to_function("", use_jit=False)
+    return bd.bf_to_function("", use_jit=bd.UseJIT.NO)
 
 
 @pytest.fixture
 def nop_in_memory():
-    return bd.bf_to_function("")
+    return bd.bf_to_function("", use_jit=bd.UseJIT.SYSCALLS)
 
 
 def test_dll_with_our_tape(nop_in_dll):

@@ -26,7 +26,9 @@ def _linux_candidates(machine: str) -> tuple[Target, ...]:
         case "riscv64":
             return (Target.RISCV64,)
         case "x86_64":
-            return (Target.X86_64_GAS_INTEL, Target.X86_64_GAS_ATT, Target.X86_64_NASM)
+            return (Target.X86_64_GAS_INTEL, Target.X86_64_LINUX_SYSCALLS_GAS_INTEL,
+                    Target.X86_64_GAS_ATT, Target.X86_64_LINUX_SYSCALLS_GAS_ATT,
+                    Target.X86_64_NASM, Target.X86_64_LINUX_SYSCALLS_NASM)
         case _:
             raise NotImplementedError(f"Linux on {machine} is not supported")
 
@@ -59,6 +61,9 @@ class Target(enum.Enum):
     X86_64_GAS_ATT = enum.auto()
     X86_64_GAS_INTEL = enum.auto()
     X86_64_NASM = enum.auto()
+    X86_64_LINUX_SYSCALLS_GAS_ATT = enum.auto()
+    X86_64_LINUX_SYSCALLS_GAS_INTEL = enum.auto()
+    X86_64_LINUX_SYSCALLS_NASM = enum.auto()
 
     @staticmethod
     def candidates() -> tuple[Target, ...]:
@@ -95,10 +100,16 @@ class Target(enum.Enum):
             case Target.X86_32_NASM:
                 yield from generate_x86_32_nasm(intermediate)
             case Target.X86_64_GAS_ATT:
-                yield from generate_x86_64_att(intermediate)
+                yield from generate_x86_64_att(intermediate, linux_syscalls=False)
             case Target.X86_64_GAS_INTEL:
-                yield from generate_x86_64_gas_intel(intermediate)
+                yield from generate_x86_64_gas_intel(intermediate, linux_syscalls=False)
             case Target.X86_64_NASM:
-                yield from generate_x86_64_nasm(intermediate)
+                yield from generate_x86_64_nasm(intermediate, linux_syscalls=False)
+            case Target.X86_64_LINUX_SYSCALLS_GAS_ATT:
+                yield from generate_x86_64_att(intermediate, linux_syscalls=True)
+            case Target.X86_64_LINUX_SYSCALLS_GAS_INTEL:
+                yield from generate_x86_64_gas_intel(intermediate, linux_syscalls=True)
+            case Target.X86_64_LINUX_SYSCALLS_NASM:
+                yield from generate_x86_64_nasm(intermediate, linux_syscalls=True)
             case _:
                 raise RuntimeError(f"unhandled target {self}, this is a bug")

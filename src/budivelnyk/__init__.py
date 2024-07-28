@@ -2,11 +2,10 @@
 Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
-import enum
 import shutil
 from os import path
 from ctypes import CDLL
-from platform import system
+from platform import system, machine
 from typing import Callable, Iterator
 from tempfile import NamedTemporaryFile
 
@@ -14,20 +13,25 @@ from .helpers import run_and_maybe_fail
 from .tape import Tape, tape_of_size, tape_with_contents, as_tape
 from .intermediate import AST, bf_to_intermediate
 from .targets import Target
-from .targets.jit import intermediate_to_function, jit_implemented
+from .targets.jit import intermediate_to_function, UseJIT
 
 
-def bf_to_function(bf_code: str, *, use_jit: bool = True) -> Callable[[Tape], None]:
-    if use_jit:
-        intermediate: AST = bf_to_intermediate(bf_code)
-        return intermediate_to_function(intermediate)
-    else:
-        with NamedTemporaryFile() as library_file:
-            library_path = library_file.name
-            bf_to_shared(bf_code, library_path)
-            func = CDLL(library_path).run
-            func.restype = None
-            return func
+def bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]:
+    intermediate: AST
+    match use_jit:
+        case UseJIT.LIBC:
+            intermediate = bf_to_intermediate(bf_code)
+            return intermediate_to_function(intermediate, linux_syscalls=False)
+        case UseJIT.SYSCALLS:
+            intermediate = bf_to_intermediate(bf_code)
+            return intermediate_to_function(intermediate, linux_syscalls=True)
+        case UseJIT.NO:
+            with NamedTemporaryFile() as library_file:
+                library_path = library_file.name
+                bf_to_shared(bf_code, library_path)
+                func = CDLL(library_path).run
+                func.restype = None
+                return func
 
 
 def bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]:
@@ -50,7 +54,7 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = T
 
 
 def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None:
-    nasm: bool = target in (Target.X86_32_NASM, Target.X86_64_NASM)
+    nasm: bool = target in (Target.X86_32_NASM, Target.X86_64_NASM, Target.X86_64_LINUX_SYSCALLS_NASM)
     if not shutil.which("cc"):
         raise RuntimeError("cc not found")
     if nasm and not shutil.which("nasm"):
@@ -62,7 +66,7 @@ def bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.sugg
         bf_to_asm_file(bf_code, asm_path, target=target)
         # assemble:
         if nasm:
-            bits = 64 if target == Target.X86_64_NASM else 32
+            bits = 32 if target == Target.X86_32_NASM else 64
             FORMAT = "-felf" + str(bits)
             LINUX = ["-DLINUX"] if system() == "Linux" else []
             run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path, *LINUX)
