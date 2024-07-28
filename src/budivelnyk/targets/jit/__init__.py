@@ -41,7 +41,6 @@ def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
     return ctypes.cast(array_view, ctypes.CFUNCTYPE(None))
 
 
-# TODO: restructure
 def intermediate_to_function(intermediate: AST, *, linux_syscalls: bool) -> Callable[[Tape], None]:
     code: bytes = _intermediate_to_machine_code(intermediate, linux_syscalls)
     return _machine_code_to_function(code)
