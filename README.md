@@ -100,7 +100,7 @@ bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
 
 ## Creating Shared Libraries
 
-The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_file_to_shared` helper function to create the shared library directly from bf code:
+The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_to_shared` and `bf_file_to_shared` helper functions to create the shared library directly from bf code:
 
 ```python
 from budivelnyk import bf_file_to_shared
@@ -186,13 +186,13 @@ which return a mutable `ctypes` array of unsigned bytes:
 from ctypes import CDLL
 from budivelnyk import make_tape
 
-mylib = CDLL("./mylib.so")
+my_lib = CDLL("./mylib.so")
+
 tape = tape_with_contents(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
 my_lib.run(tape)
 
-my_other_lib = CDLL("./myotherlib.so")
 other_tape = tape_of_size(4)  # creates a tape with 4 cells, initialized to zero
-my_other_lib.run(other_tape)
+my_lib.run(other_tape)
 ```
 
 The `as_tape(buffer, size: int) -> Tape` function can be used to wrap an existing mutable buffer, e.g. a `numpy` array:
