@@ -11,7 +11,9 @@ from .hex import b
 
 
 def generate_x86_64(intermediate: AST, linux_syscalls: bool) -> bytes:
-    # TODO: oh no, I don't have any JIT tests with .,
+    # TODO:
+    # I need JIT tests with ., and the best way to achieve it is to unify test_jit and test_bf_to_shared as test_bf_to_function.
+    # Separately, there should be (less detailed) tests for the other four bf* functions.
 
     return b"".join([*_generate_prologue(linux_syscalls),
                      *_generate_body(intermediate, linux_syscalls),
