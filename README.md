@@ -244,7 +244,11 @@ Use `bf_to_function` to directly create a Python function from bf code:
 [11, 0]
 ```
 
-The function `bf_to_function` has an additional optional `use_jit` parameter. When called with `use_jit=UseJIT.SYSCALLS` (the default on Linux) or `use_jit=UseJIT.LIBC`, it generates runnable machine code in memory without using an external assembler or linker, in the first case with system calls and in the second case with calls to the C library. Both options currently only work on x86_64 Linux. When called with `use_jit=UseJIT.NO` (the default on every other platform), it falls back to producing temporary assembly files and processing them with an external assembler and linker.
+The function `bf_to_function` has an optional `use_jit` parameter. 
+
+When called with `use_jit=bd.UseJIT.SYSCALLS` (the default on x86_64 Linux) or `use_jit=bd.UseJIT.LIBC`, it generates runnable machine code in memory without using an external assembler or linker. Code generated with `bd.UseJIT.SYSCALLS` uses system calls and code generated with `bd.UseJIT.LIBC` calls functions from the C library. Both options currently only work on x86_64 Linux.
+
+When called with `use_jit=bd.UseJIT.NO` (the default on every other platform), the fallback implementation is used: it creates temporary assembly files, calls an external assembler and linker to create a shared library, then loads the function from the shared library.
 
 ## Optimisations
 
@@ -252,6 +256,24 @@ The compiler performs simple optimisations like folding every sequence of the fo
 
 The compiler also eliminates some unreachable code. For example, in constructions like `[-][+]` the second loop will not be executed, as the cell already contains 0, so it's safe to skip it during compilation. People usually don't write unreachable
 code on purpose other than for testing the compiler, so we emit a warning.
+
+## Summary and Type Signatures
+
+To summarize, the package provides the following types:
+
+- `Tape`, `Target`, `UseJIT`
+
+And the following functions:
+
+- `bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]`
+- `bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]`
+- `bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None`
+- `bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None`
+- `bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None`
+
+And the following global variable:
+
+- `jit_implemented: bool` (true on x86_64 Linux, false otherwise)
 
 ## Frequently Asked Questions
 
