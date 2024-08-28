@@ -212,7 +212,7 @@ The function is very lenient and assumes that you know what you're doing. If you
 >>> import numpy as np
 >>> import budivelnyk as bd
 >>> arr = np.array([[1,0,-1]], dtype=np.int32)
->>> bd.as_tape(arr)[:]
+>>> bd.as_tape(arr, len(arr))[:]
 [1]
 >>> bd.as_tape(arr, arr.nbytes)[:]
 [1, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255]
