@@ -69,7 +69,7 @@ def _generate_body(intermediate: AST, parent_label: str='', *, thumb: bool) -> I
                 if thumb:
                     yield f'    cbz    r1, end{label}'
                 else:
-                    yield f'    cmp    r1, 0'
+                    yield  '    cmp    r1, 0'
                     yield f'    beq    end{label}'
                 yield from _generate_body(body, label, thumb=thumb)
                 yield f'    b      start{label}'

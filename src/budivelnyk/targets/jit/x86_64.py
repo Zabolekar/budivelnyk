@@ -1,5 +1,4 @@
 from typing import Iterator
-from platform import system
 
 from ...intermediate import (
     AST, Loop,
@@ -59,10 +58,9 @@ def _generate_body(intermediate: AST, linux_syscalls: bool) -> Iterator[bytes]:
                     yield b("48 89 fe")        # mov rsi, rdi
                     yield b("bf 01 00 00 00")  # mov edi, 1
                     yield b("ba 01 00 00 00")  # mov edx, 1
-                    
                     yield from [
-                        b("b8 01 00 00 00")  # mov eax, 1
-                      + b("0f 05")           # syscall
+                        b("b8 01 00 00 00") +  # mov eax, 1
+                        b("0f 05")             # syscall
                     ] * n
                     yield b("48 89 f7")        # mov rdi, rsi
                 else:

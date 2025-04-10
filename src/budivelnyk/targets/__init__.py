@@ -80,7 +80,6 @@ class Target(enum.Enum):
     def suggest() -> Target:
         return Target.candidates()[0]
 
-
     def intermediate_to_asm(self, intermediate: AST) -> Iterator[str]:
         match self:
             case Target.ARM32:
