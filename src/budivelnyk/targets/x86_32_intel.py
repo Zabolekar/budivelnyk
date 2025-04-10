@@ -35,7 +35,7 @@ def _generate_prologue_gas() -> Iterator[str]:
 
 def _generate_prologue_nasm() -> Iterator[str]:
     yield '    extern getchar, putchar, _GLOBAL_OFFSET_TABLE_'
-    yield '' 
+    yield ''
     yield 'get_pc:'
     yield '    mov   ebx, dword [esp]'
     yield '    ret'
@@ -56,7 +56,7 @@ def _generate_epilogue() -> Iterator[str]:
 def _generate_body(intermediate: AST, nasm: bool, parent_label: str='') -> Iterator[str]:
     if nasm:
         ptr = ""
-        plt = " wrt ..plt" 
+        plt = " wrt ..plt"
     else:
         ptr = " ptr"
         plt = "@PLT"

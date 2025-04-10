@@ -23,7 +23,7 @@ def _generate_prologue() -> Iterator[str]:
     yield '    stw    r0, 8(r1)'
     yield '    stw    r30, -8(r1)'
     yield '    stwu   r1, -80(r1)'
-    
+
 
 def _generate_epilogue() -> Iterator[str]:
     yield '    addi   r1, r1, 80'
@@ -51,7 +51,7 @@ def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:
                 yield f'    subi   r3, r3, {n}'
             case Output(n):
                 yield  '    mr     r30, r3'
-                yield f'    lbz    r3, 0(r3)'
+                yield  '    lbz    r3, 0(r3)'
                 yield from ['    bl     _putchar'] * n
                 yield  '    mr     r3, r30'
             case Input(n):

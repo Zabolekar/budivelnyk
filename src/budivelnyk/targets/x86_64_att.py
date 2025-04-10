@@ -78,7 +78,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, parent_label: str=''
                     label = f"read_{input_id}_done"
                     yield  '    cmpl   $1, %eax'
                     yield f'    je     {label}'
-                    yield f'    movb   $0, (%rdi)'
+                    yield  '    movb   $0, (%rdi)'
                     yield f'{label}:'
                     input_id += 1
                 else:

@@ -3,9 +3,8 @@ Compile bf to asm or to a Python function. Cell size is one byte.
 """
 
 import shutil
-from os import path
 from ctypes import CDLL
-from platform import system, machine
+from platform import system
 from typing import Callable, Iterator
 from tempfile import NamedTemporaryFile
 
@@ -76,13 +75,13 @@ def _intermediate_to_shared(intermediate: AST, output_path: str, target: Target)
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
-        SHARED = "-dynamiclib" if system() == "Darwin" else "-shared" 
+        SHARED = "-dynamiclib" if system() == "Darwin" else "-shared"
         run_and_maybe_fail("cc", SHARED, object_path, "-o", output_path)
 
 
 def _intermediate_to_asm_file(intermediate: AST, output_path: str, target: Target) -> None:
     lines = target.intermediate_to_asm(intermediate)
-    
+
     with open(output_path, 'w') as output_file:
         print(*lines, sep="\n", file=output_file)
 
