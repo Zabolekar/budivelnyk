@@ -70,13 +70,12 @@ def _intermediate_to_shared(intermediate: AST, output_path: str, target: Target)
         if nasm:
             bits = 32 if target == Target.X86_32_NASM else 64
             FORMAT = "-felf" + str(bits)
-            LINUX = ["-DLINUX"] if system() == "Linux" else []
-            run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path, *LINUX)
+            run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path)
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
         SHARED = "-dynamiclib" if system() == "Darwin" else "-shared"
-        run_and_maybe_fail("cc", SHARED, object_path, "-o", output_path)
+        run_and_maybe_fail("cc", "-z", "noexecstack", SHARED, object_path, "-o", output_path)
 
 
 def _intermediate_to_asm_file(intermediate: AST, output_path: str, target: Target) -> None:

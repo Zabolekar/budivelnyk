@@ -44,6 +44,9 @@ Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For eve
 
 Supported linkers are GNU `ld` and LLVM's `lld`.
 
+If you assemble and link the asm code produced by budivelnyk and see a warning about executable stack, add the `-z noexecstack` linker flag.
+See [executable_stack.md](executable_stack.md) for details.
+
 ## Requirements
 
 The compiler itself only requires Python 3.10 or later to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking, but it's only required for developing the compiler, not for using it.
@@ -82,10 +85,6 @@ run:
     inc   rdi
     sub   byte ptr [rdi], 2
     ret
-
-#ifdef LINUX
-    .section .note.GNU-stack, "", @progbits
-#endif
 ```
 
 You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that are likely to run on your machine with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`. For example, on an AMD64 machine, the default target is `X86_64_GAS_INTEL`.

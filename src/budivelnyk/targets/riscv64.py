@@ -26,10 +26,6 @@ def _generate_epilogue() -> Iterator[str]:
     yield '    ld     ra, 8(sp)'
     yield '    addi   sp, sp, 16'
     yield '    ret'
-    yield ''
-    yield '#ifdef LINUX'
-    yield '    .section .note.GNU-stack, "", @progbits'
-    yield '#endif'
 
 
 def _generate_body(intermediate: AST, parent_label: str='') -> Iterator[str]:

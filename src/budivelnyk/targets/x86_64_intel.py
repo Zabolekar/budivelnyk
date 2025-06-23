@@ -8,13 +8,13 @@ from ..intermediate import (
 def generate_x86_64_gas_intel(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
     yield from _generate_prologue_gas()
     yield from _generate_body(intermediate, linux_syscalls, nasm=False)
-    yield from _generate_epilogue_gas()
+    yield from _generate_epilogue()
 
 
 def generate_x86_64_nasm(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
     yield from _generate_prologue_nasm(linux_syscalls)
     yield from _generate_body(intermediate, linux_syscalls, nasm=True)
-    yield from _generate_epilogue_nasm()
+    yield from _generate_epilogue()
 
 
 def _generate_prologue_gas() -> Iterator[str]:
@@ -32,22 +32,8 @@ def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
     yield 'run:'
 
 
-def _generate_epilogue_gas() -> Iterator[str]:
+def _generate_epilogue() -> Iterator[str]:
     yield '    ret'
-    yield ''
-    yield '#ifdef LINUX'
-    yield '    .section .note.GNU-stack, "", @progbits'
-    yield '#endif'
-
-
-def _generate_epilogue_nasm() -> Iterator[str]:
-    yield '    ret'
-    yield ''
-    yield '; assemble with -DLINUX if you want it to link on Linux without warnings'
-    # TODO: document, or maybe make unconditional? test on FreeBSD
-    yield '%ifdef LINUX'
-    yield '    section .note.GNU-stack progbits'
-    yield '%endif'
 
 
 def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_label: str='') -> Iterator[str]:
