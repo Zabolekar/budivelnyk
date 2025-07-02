@@ -46,6 +46,8 @@ def intermediate_to_function(intermediate: AST, *, linux_syscalls: bool) -> Call
     return _machine_code_to_function(code)
 
 
+# TODO: error handling, especially on platforms that aren't Linux, and tests
+# TODO: this is wasteful if we allocate lots of functions all smaller than os.sysconf("SC_PAGESIZE")
 def _executable_memory(size: int) -> mmap.mmap:
     permissions = mmap.PROT_READ|mmap.PROT_WRITE|mmap.PROT_EXEC
     flags = mmap.MAP_PRIVATE|mmap.MAP_ANON
