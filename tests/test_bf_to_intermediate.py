@@ -10,4 +10,4 @@ def test_dead_code():
 
         assert len(warnings) == 1
         message = warnings[0].message.args[0]
-        assert message == "Unreachable code detected and eliminated"
+        assert message == "Unreachable code eliminated at line 1, column 4"

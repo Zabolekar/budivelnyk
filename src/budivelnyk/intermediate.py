@@ -1,4 +1,4 @@
-from typing import Iterable, TypeAlias
+from typing import Iterable, TypeAlias, cast
 from dataclasses import dataclass
 from itertools import groupby
 from warnings import warn
@@ -71,8 +71,10 @@ def _parsed_bf_to_intermediate(bf_ast: bf.AST) -> Iterable[Node]:
                 # After the execution of the first loop the current cell always
                 # contains 0, so the following loops won't be executed anyway.
                 if count > 1:
-                    warn("Unreachable code detected and eliminated", RuntimeWarning)
-                # TODO: add line number and position
+                    second_group = cast(bf.Loop, group[1])
+                    position = second_group.starts_at
+                    assert position is not None  # It's only None if we generate nodes manually, not if we parse bf code.
+                    warn(f"Unreachable code eliminated at line {position.line}, column {position.column}", RuntimeWarning)
                 body = _parsed_bf_to_intermediate(bf_body)
                 yield Loop(list(body))
 

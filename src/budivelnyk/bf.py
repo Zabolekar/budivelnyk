@@ -1,5 +1,16 @@
+from __future__ import annotations
 from typing import Iterable, TypeAlias
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+
+@dataclass
+class Position:
+    total: int
+    line: int
+    column: int
+
+    def copy(self) -> Position:
+        return replace(self)
 
 # Bf commands
 
@@ -37,20 +48,20 @@ class Input(Node):
 class Loop(Node):
     """ [] """
     body: AST
-
-
-@dataclass
-class _Position:
-    total: int
-    line: int
-    column: int
+    starts_at: Position|None = None
+    # `starts_at` is position in source code. If there is no source code
+    # (e.g. if we generate bf AST directly), it should be None.
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Loop):
+            return NotImplemented
+        return self.body == other.body
 
 def parse_bf(code: str) -> AST:
-    start = _Position(total=0, line=1, column=0)
+    start = Position(total=0, line=1, column=0)
     return list(_parse_bf(code, start, expect_closing_bracket=False))
 
 
-def _parse_bf(code: str, position: _Position, expect_closing_bracket: bool) -> Iterable[Node]:
+def _parse_bf(code: str, position: Position, expect_closing_bracket: bool) -> Iterable[Node]:
 
     found_closing_bracket: bool = False
 
@@ -68,8 +79,9 @@ def _parse_bf(code: str, position: _Position, expect_closing_bracket: bool) -> I
             case '.': yield Output()
             case ',': yield Input()
             case '[':
+                starting_position = position.copy()
                 body = _parse_bf(code, position, expect_closing_bracket=True)
-                yield Loop(list(body))
+                yield Loop(list(body), starting_position)
             case ']':
                 if expect_closing_bracket:
                     found_closing_bracket = True
