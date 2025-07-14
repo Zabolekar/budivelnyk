@@ -21,14 +21,14 @@ def _generate_prologue_gas() -> Iterator[str]:
     yield '    .intel_syntax noprefix'
     yield ''
     yield '    .globl run'
-    yield '    .type run, @function'
+    yield '    .type run, @function'  # TODO: inconsistent, do it in NASM or don't do it in GAS
     yield 'run:'
 
 
 def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
     yield '    global run'
     if not linux_syscalls:
-        yield '    extern getchar, putchar'
+        yield '    extern getchar, putchar'  # TODO: eliminate if IO not used, explain why not needed for i486
     yield 'run:'
 
 
