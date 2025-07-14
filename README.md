@@ -2,7 +2,7 @@
 
 Budivelnyk is a compiler from bf to asm. The name comes from Ukrainian *будівельник* 'builder'.
 
-## Supported Input
+## Supported Frontends
 
 Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we support. More precisely, it's the following bf variant:
 - A cell is one byte large.
@@ -12,9 +12,9 @@ Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we
 
 Note: this bf variant is *not* Turing complete. For that, you'd need either unbounded tape or unbounded cells.
 
-## Supported Targets
+## Supported Backends
 
-Supported targets are, in alphabetical order:
+Supported backends are, in alphabetical order:
 
 - `ARM32`: 32-bit ARM, A32 instruction set.
   - Tested on Linux, NetBSD.
@@ -34,13 +34,13 @@ Supported targets are, in alphabetical order:
   - Linux only.
 
 As you see, `X86_32_*`, `X86_64_*`, and `X86_64_LINUX_SYSCALLS_*` each come in three variants. They generate the same instructions, but the syntax is different:
-- `X86_*_GAS_ATT` targets generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
-- `X86_*_GAS_INTEL` targets generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
-- `X86_*_NASM` targets generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
+- `X86_*_GAS_ATT` backends generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
+- `X86_*_GAS_INTEL` backends generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
+- `X86_*_NASM` backends generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
 
 **Note:** GAS code in Intel syntax and NASM code look superficially similar, but there are important differences e.g. in how they handle the Global Offset Table.
 
-Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For every other target, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
+Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For every other backend, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
 
 Supported linkers are GNU `ld` and LLVM's `lld`.
 
@@ -73,8 +73,8 @@ Be aware that the tests that require executing machine code are only performed f
 Example usage:
 
 ```pycon
->>> from budivelnyk import bf_to_asm, Target
->>> asm = bf_to_asm("+++>--", target=Target.X86_64_GAS_INTEL)
+>>> from budivelnyk import bf_to_asm, Backend
+>>> asm = bf_to_asm("+++>--", backend=Backend.X86_64_GAS_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -87,14 +87,14 @@ run:
     ret
 ```
 
-You can view the list of all targets that you can generate asm for with `tuple(Target.__members__)` and the list of all targets that are likely to run on your machine with `Target.candidates()`. The `target` parameter is optional, the default is the first target from `Target.candidates()`. For example, on an AMD64 machine, the default target is `X86_64_GAS_INTEL`.
+You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine, the default backend is `X86_64_GAS_INTEL`.
 
 For convenience, there is also `bf_file_to_asm_file` that accepts input and output paths:
 
 ```python
-from budivelnyk import bf_file_to_asm_file, Target
+from budivelnyk import bf_file_to_asm_file, Backend
 
-bf_file_to_asm_file("input.bf", "output.s", target=Target.X86_64_ATT)
+bf_file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_ATT)
 ```
 
 ## Creating Shared Libraries
@@ -260,15 +260,15 @@ code on purpose other than for testing the compiler, so we emit a warning.
 
 To summarize, the package provides the following types:
 
-- `Tape`, `Target`, `UseJIT`
+- `Tape`, `Backend`, `UseJIT`
 
 And the following functions:
 
 - `bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]`
-- `bf_to_asm(bf_code: str, *, target: Target = Target.suggest()) -> Iterator[str]`
-- `bf_file_to_asm_file(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None`
-- `bf_to_shared(bf_code: str, output_path: str, *, target: Target = Target.suggest()) -> None`
-- `bf_file_to_shared(input_path: str, output_path: str, *, target: Target = Target.suggest()) -> None`
+- `bf_to_asm(bf_code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]`
+- `bf_file_to_asm_file(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+- `bf_to_shared(bf_code: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+- `bf_file_to_shared(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
 
 And the following global variable:
 

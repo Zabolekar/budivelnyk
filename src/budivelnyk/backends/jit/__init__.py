@@ -12,7 +12,7 @@ from .x86_64 import generate_x86_64
 
 
 jit_implemented: bool = platform.system() == "Linux" and platform.machine() == "x86_64"
-# see also dispatching code in targets/__init__.py
+# see also dispatching code in backends/__init__.py
 
 
 class UseJIT(Enum):
