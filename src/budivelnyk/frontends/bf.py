@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from itertools import groupby
 from warnings import warn
 
+from . import Frontend
 from ..helpers import Position
 from .. import intermediate
 
@@ -122,6 +123,8 @@ def _parsed_to_intermediate(bf_ast: AST) -> Iterable[intermediate.Node]:
                 yield intermediate.Loop(list(body))
 
 
-def to_intermediate(bf_code: str) -> intermediate.AST:
-    parsed_bf: AST = parse_bf(bf_code)
-    return list(_parsed_to_intermediate(parsed_bf))
+class Bf(Frontend):
+    @staticmethod
+    def to_intermediate(code: str) -> intermediate.AST:
+        parsed: AST = parse_bf(code)
+        return list(_parsed_to_intermediate(parsed))

@@ -1,10 +1,10 @@
 import pytest
-from budivelnyk import bf
+from budivelnyk.frontends.bf import Bf
 from budivelnyk.intermediate import Loop, Subtract
 
 def test_dead_code():
     with pytest.warns() as warnings:
-        nodes = bf.to_intermediate("[-][+]")
+        nodes = Bf.to_intermediate("[-][+]")
 
         assert nodes == [Loop([Subtract(1)])]
 
