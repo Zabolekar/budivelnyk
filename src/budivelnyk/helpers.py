@@ -1,5 +1,17 @@
+from __future__ import annotations
 import subprocess
 from warnings import warn
+from dataclasses import dataclass, replace
+
+
+@dataclass
+class Position:
+    total: int
+    line: int
+    column: int
+
+    def copy(self) -> Position:
+        return replace(self)
 
 
 def run_and_maybe_fail(*command_with_args: str) -> None:

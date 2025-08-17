@@ -10,13 +10,14 @@ from tempfile import NamedTemporaryFile
 
 from .helpers import run_and_maybe_fail
 from .tape import Tape, tape_of_size, tape_with_contents, as_tape
-from .intermediate import AST, bf_to_intermediate
+from .intermediate import AST
+from .frontends import bf
 from .backends import Backend
 from .backends.jit import intermediate_to_function, UseJIT, jit_implemented
 
 
 def bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]:
-    intermediate: AST = bf_to_intermediate(bf_code)
+    intermediate: AST = bf.to_intermediate(bf_code)
     match use_jit:
         case UseJIT.LIBC:
             return intermediate_to_function(intermediate, linux_syscalls=False)
@@ -32,7 +33,7 @@ def bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Calla
 
 
 def bf_to_asm(bf_code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]:
-    intermediate: AST = bf_to_intermediate(bf_code)
+    intermediate: AST = bf.to_intermediate(bf_code)
     yield from backend.intermediate_to_asm(intermediate)
 
 
@@ -44,7 +45,7 @@ def bf_file_to_asm_file(input_path: str, output_path: str, *, backend: Backend =
 
 
 def bf_to_shared(bf_code: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None:
-    intermediate: AST = bf_to_intermediate(bf_code)
+    intermediate: AST = bf.to_intermediate(bf_code)
     _intermediate_to_shared(intermediate, output_path, backend)
 
 

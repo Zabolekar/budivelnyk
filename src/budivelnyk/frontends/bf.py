@@ -1,16 +1,11 @@
-from __future__ import annotations
-from typing import Iterable, TypeAlias
-from dataclasses import dataclass, replace
+from typing import Iterable, TypeAlias, cast
+from dataclasses import dataclass
+from itertools import groupby
+from warnings import warn
 
+from ..helpers import Position
+from .. import intermediate
 
-@dataclass
-class Position:
-    total: int
-    line: int
-    column: int
-
-    def copy(self) -> Position:
-        return replace(self)
 
 # Bf commands
 
@@ -94,3 +89,39 @@ def _parse_bf(code: str, position: Position, expect_closing_bracket: bool) -> It
 
     if expect_closing_bracket and not found_closing_bracket:
         raise ValueError('Closing bracket expected, reached end of file instead')
+
+
+def _parsed_to_intermediate(bf_ast: AST) -> Iterable[intermediate.Node]:
+    for (_, g) in groupby(bf_ast, type):
+        group = list(g)
+        count = len(group)
+        specimen = group[0]
+        match specimen:
+            case Inc():
+                yield intermediate.Add(count)  # TODO: check for byte overflow in add and subtract
+            case Dec():
+                yield intermediate.Subtract(count)
+            case Forward():
+                yield intermediate.Forward(count)
+            case Back():
+                yield intermediate.Back(count)
+            case Output():
+                yield intermediate.Output(count)
+            case Input():
+                yield intermediate.Input(count)
+            case Loop(bf_body):
+                # We optimize consecutive loops of the form [a][b][c] into [a].
+                # After the execution of the first loop the current cell always
+                # contains 0, so the following loops won't be executed anyway.
+                if count > 1:
+                    second_group = cast(Loop, group[1])
+                    position = second_group.starts_at
+                    assert position is not None  # It's only None if we generate nodes manually, not if we parse bf code.
+                    warn(f"Unreachable code eliminated at line {position.line}, column {position.column}", RuntimeWarning)
+                body = _parsed_to_intermediate(bf_body)
+                yield intermediate.Loop(list(body))
+
+
+def to_intermediate(bf_code: str) -> intermediate.AST:
+    parsed_bf: AST = parse_bf(bf_code)
+    return list(_parsed_to_intermediate(parsed_bf))

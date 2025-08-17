@@ -1,5 +1,5 @@
 import pytest
-from budivelnyk.bf import parse_bf, Loop
+from budivelnyk.frontends.bf import parse_bf, Loop
 
 def test_balanced_brackets():
     result = parse_bf("[][[[]]]")
