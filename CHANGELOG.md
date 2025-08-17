@@ -1,6 +1,12 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.0.9
+
+- Simplified and documented executable stack handling
+- Warnings are now able to tell the position where they occured
+- Infrastracture for multiple frontends (that is, not only bf)
+
 # 0.0.8
 
 - Linux syscalls (as an alternative to libc calls) supported on x86_64

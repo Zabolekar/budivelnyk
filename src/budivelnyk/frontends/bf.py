@@ -92,8 +92,8 @@ def _parse_bf(code: str, position: Position, expect_closing_bracket: bool) -> It
         raise ValueError('Closing bracket expected, reached end of file instead')
 
 
-def _parsed_to_intermediate(bf_ast: AST) -> Iterable[intermediate.Node]:
-    for (_, g) in groupby(bf_ast, type):
+def _parsed_to_intermediate(ast: AST) -> Iterable[intermediate.Node]:
+    for (_, g) in groupby(ast, type):
         group = list(g)
         count = len(group)
         specimen = group[0]
@@ -110,7 +110,7 @@ def _parsed_to_intermediate(bf_ast: AST) -> Iterable[intermediate.Node]:
                 yield intermediate.Output(count)
             case Input():
                 yield intermediate.Input(count)
-            case Loop(bf_body):
+            case Loop(body):
                 # We optimize consecutive loops of the form [a][b][c] into [a].
                 # After the execution of the first loop the current cell always
                 # contains 0, so the following loops won't be executed anyway.
@@ -119,8 +119,7 @@ def _parsed_to_intermediate(bf_ast: AST) -> Iterable[intermediate.Node]:
                     position = second_group.starts_at
                     assert position is not None  # It's only None if we generate nodes manually, not if we parse bf code.
                     warn(f"Unreachable code eliminated at line {position.line}, column {position.column}", RuntimeWarning)
-                body = _parsed_to_intermediate(bf_body)
-                yield intermediate.Loop(list(body))
+                yield intermediate.Loop(list(_parsed_to_intermediate(body)))
 
 
 class Bf(Frontend):

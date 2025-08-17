@@ -7,11 +7,11 @@ import budivelnyk as bd
 def nop(request):
     match request.param:
         case "DLL":
-            return bd.bf_to_function("", use_jit=bd.UseJIT.NO)
+            return bd.Bf.to_function("", use_jit=bd.UseJIT.NO)
         case "memory":
             if not bd.jit_implemented:
                 pytest.skip()
-            return bd.bf_to_function("", use_jit=bd.UseJIT.SYSCALLS)    
+            return bd.Bf.to_function("", use_jit=bd.UseJIT.SYSCALLS)    
 
 
 def test_our_tape(nop):

@@ -73,8 +73,8 @@ Be aware that the tests that require executing machine code are only performed f
 Example usage:
 
 ```pycon
->>> from budivelnyk import bf_to_asm, Backend
->>> asm = bf_to_asm("+++>--", backend=Backend.X86_64_GAS_INTEL)
+>>> from budivelnyk import Bf, Backend
+>>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_GAS_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -89,22 +89,22 @@ run:
 
 You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine, the default backend is `X86_64_GAS_INTEL`.
 
-For convenience, there is also `bf_file_to_asm_file` that accepts input and output paths:
+For convenience, there is also `Bf.file_to_asm_file` that accepts input and output paths:
 
 ```python
-from budivelnyk import bf_file_to_asm_file, Backend
+from budivelnyk import Bf, Backend
 
-bf_file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_ATT)
+Bf.file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_ATT)
 ```
 
 ## Creating Shared Libraries
 
-The produced asm code can be manually assembled and linked to a shared library. You can also use the `bf_to_shared` and `bf_file_to_shared` helper functions to create the shared library directly from bf code:
+The produced asm code can be manually assembled and linked to a shared library. You can also use the `Bf.to_shared` and `Bf.file_to_shared` helper functions to create the shared library directly from bf code:
 
 ```python
-from budivelnyk import bf_file_to_shared
+from budivelnyk import Bf
 
-bf_file_to_shared("input.bf", "liboutput.so")
+Bf.file_to_shared("input.bf", "liboutput.so")
 ```
 
 The compiler always generates exactly one function named `run` that you can use as if its definition were `void run(unsigned char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.
@@ -115,7 +115,7 @@ Let's say you have created a bf shared library like this:
 
 ```python
 import budivelnyk as bd
-bd.bf_to_shared(".+.+.>.", "test.so")
+bd.Bf.to_shared(".+.+.>.", "test.so")
 ```
 
 If the shared library exists at compilation time, you can call it from C like this:
@@ -230,20 +230,20 @@ my_lib.run(b"test")
 
 If your code doesn't modify the tape, it may work, but do not rely on this. **Do not ever** do this if your code modifies the tape. This will cause bizarre bugs, e.g. literals like `b"\0"` evaluating to `b"\xff"`. The Python interpreter expects all `bytes` objects to be immutable and reuses them.
 
-## `bf_to_function` and Experimental JIT Compilation
+## `Bf.to_function` and Experimental JIT Compilation
 
-Use `bf_to_function` to directly create a Python function from bf code:
+Use `Bf.to_function` to directly create a Python function from bf code:
 
 ```pycon
 >>> import budivelnyk as bd
 >>> tape = bd.tape_with_contents(bytes([5,6]))
->>> add = bd.bf_to_function(">[-<+>]")
+>>> add = bd.Bf.to_function(">[-<+>]")
 >>> add(tape)
 >>> tape[:]
 [11, 0]
 ```
 
-The function `bf_to_function` has an optional `use_jit` parameter. 
+The function `Bf.to_function` has an optional `use_jit` parameter. 
 
 When called with `use_jit=bd.UseJIT.SYSCALLS` (the default on x86_64 Linux) or `use_jit=bd.UseJIT.LIBC`, it generates runnable machine code in memory without using an external assembler or linker. Code generated with `bd.UseJIT.SYSCALLS` uses system calls and code generated with `bd.UseJIT.LIBC` calls functions from the C library. Both options currently only work on x86_64 Linux.
 
@@ -264,11 +264,11 @@ To summarize, the package provides the following types:
 
 And the following functions:
 
-- `bf_to_function(bf_code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]`
-- `bf_to_asm(bf_code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]`
-- `bf_file_to_asm_file(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
-- `bf_to_shared(bf_code: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
-- `bf_file_to_shared(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+- `Bf.to_function(code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]`
+- `Bf.to_asm(code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]`
+- `Bf.file_to_asm_file(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+- `Bf.to_shared(code: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+- `Bf.file_to_shared(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
 
 And the following global variable:
 
