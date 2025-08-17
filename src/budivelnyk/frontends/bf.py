@@ -4,7 +4,7 @@ from itertools import groupby
 from warnings import warn
 
 from . import Frontend
-from ..helpers import Position
+from .helpers import Position
 from .. import intermediate
 
 
