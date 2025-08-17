@@ -49,7 +49,8 @@ all programs linked against it will have executable stack, too,
 whether they want it or not.
 
 2. On some popular Linux distros, e.g. Debian and Ubuntu, executable stack
-is the default. Your code will be marked as needing executable stack unless you opt out (at least the linker warns you, though).
+is the default. Your code will be marked as needing executable stack unless
+you opt out (at least the linker warns you, though).
 
 This means: we have to mark our code as *not* needing executable stack,
 or it will have executable stack and all programs linked against it will
@@ -88,7 +89,8 @@ $ ./a.out
 Segmentation fault
 ```
 
-It crashes, as expected. As `man lld` says, stack permissions are recorded in the `PT_GNU_STACK` segment. You can examine them with `readelf`:
+It crashes, as expected. As `man lld` says, stack permissions are recorded
+in the `PT_GNU_STACK` segment. You can examine them with `readelf`:
 
 ```
 $ readelf --segments a.out | grep STACK -A 1
