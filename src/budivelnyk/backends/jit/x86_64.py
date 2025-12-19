@@ -31,6 +31,7 @@ def _generate_epilogue(linux_syscalls: bool) -> Iterator[bytes]:
     if not linux_syscalls:
         yield b("41 5D")   # pop r13
         yield b("41 5C")   # pop r12
+    yield b("48 89 F8")    # mov rax, rdi
     yield b("C3")      # ret
 
 

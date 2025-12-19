@@ -2,10 +2,7 @@ from budivelnyk import jit_implemented
 import pytest
 
 
-skip_if_jit_not_implemented = pytest.mark.skipif(
-    not jit_implemented,
-    reason="JIT compiler not implemented for this platform"
-)
+JIT_NOT_IMPLEMENTED_MESSAGE = "JIT compiler not implemented for this platform"
 
 
 @pytest.fixture(scope='function')

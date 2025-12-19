@@ -49,6 +49,7 @@ def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
 
 
 def _generate_epilogue() -> Iterator[str]:
+    yield '    mov   rax, rdi'
     yield '    ret'
 
 

@@ -1,8 +1,12 @@
-from budivelnyk import Bf, tape_of_size, tape_with_contents
-from helpers import skip_if_jit_not_implemented
+from budivelnyk import Bf, tape_of_size, tape_with_contents, jit_implemented
+from helpers import JIT_NOT_IMPLEMENTED_MESSAGE
+import pytest
 
 
-@skip_if_jit_not_implemented
+if not jit_implemented:
+    pytest.skip(reason=JIT_NOT_IMPLEMENTED_MESSAGE, allow_module_level=True)
+
+
 def test_simple():
     func = Bf.to_function(">+>++")
     tape = tape_of_size(3)
@@ -10,7 +14,6 @@ def test_simple():
     assert tape[:] == [0, 1, 2]
 
 
-@skip_if_jit_not_implemented
 def test_clear():
     func = Bf.to_function("[-]")
     tape = tape_with_contents(b"a")
@@ -18,7 +21,6 @@ def test_clear():
     assert tape[:] == [0]
 
 
-@skip_if_jit_not_implemented
 def test_multiply():
     func = Bf.to_function("++[>+++<-]>[<+++++>-]")
     tape = tape_of_size(2)
@@ -26,7 +28,6 @@ def test_multiply():
     assert tape[:] == [30, 0]
 
 
-@skip_if_jit_not_implemented
 def test_empty_loop():
     func = Bf.to_function("[]")
     tape = tape_with_contents(bytes([0, 123]))

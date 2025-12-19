@@ -31,6 +31,7 @@ def _generate_prologue() -> Iterator[str]:
 
 
 def _generate_epilogue() -> Iterator[str]:
+    yield '    movq   %rdi, %rax'
     yield '    ret'
 
 

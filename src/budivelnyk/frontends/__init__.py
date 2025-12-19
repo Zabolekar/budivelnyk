@@ -1,6 +1,6 @@
 from typing import Callable, Iterator, TypeVar, Type
 import shutil
-from ctypes import CDLL
+from ctypes import CDLL, POINTER, c_ubyte
 from platform import system
 from tempfile import NamedTemporaryFile
 from abc import ABC, abstractmethod
@@ -34,7 +34,7 @@ class Frontend(ABC):
                     library_path = library_file.name
                     _intermediate_to_shared(intermediate, library_path, Backend.suggest())
                     func = CDLL(library_path).run
-                    func.restype = None
+                    func.restype = POINTER(c_ubyte) 
                     return func
 
     @classmethod
