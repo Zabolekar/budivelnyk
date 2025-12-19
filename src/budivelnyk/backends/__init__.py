@@ -13,41 +13,6 @@ from .x86_32_intel import generate_x86_32_gas_intel, generate_x86_32_nasm
 from .x86_64_att import generate_x86_64_att
 from .x86_64_intel import generate_x86_64_gas_intel, generate_x86_64_nasm
 
-# platform.machine can be not specific enough on NetBSD,
-# platform.processor can be empty on Linux, so we have
-# to handle the systems differently:
-
-def _linux_candidates(machine: str) -> tuple[Backend, ...]:
-    match machine:
-        case "armv7l":
-            return (Backend.ARM32_THUMB, Backend.ARM32)
-        case "i686":
-            return (Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_64_NASM)
-        case "riscv64":
-            return (Backend.RISCV64,)
-        case "x86_64":
-            return (Backend.X86_64_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_GAS_INTEL,
-                    Backend.X86_64_GAS_ATT, Backend.X86_64_LINUX_SYSCALLS_GAS_ATT,
-                    Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM)
-        case _:
-            raise NotImplementedError(f"Linux on {machine} is not supported")
-
-
-def _bsd_candidates(system: str, processor: str) -> tuple[Backend, ...]:
-    match processor:
-        case "aarch64":  # tested with Net and Open
-            return (Backend.ARM64,)
-        case "amd64":  # tested with Free
-            return (Backend.X86_64_GAS_INTEL, Backend.X86_64_GAS_ATT, Backend.X86_64_NASM)
-        case "earmv7hf":  # tested with Net
-            return (Backend.ARM32_THUMB, Backend.ARM32)
-        case "i386":  # tested with Open
-            return (Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_32_NASM)
-        case "powerpc":  # tested with Mac OS X
-            return (Backend.PPC32,)
-        case _:
-            raise NotImplementedError(f"{system} on {processor} is not supported")
-
 
 class Backend(enum.Enum):
     ARM32 = enum.auto()
@@ -67,14 +32,30 @@ class Backend(enum.Enum):
 
     @staticmethod
     def candidates() -> tuple[Backend, ...]:
-        system = platform.system()
-        match system:
-            case "Linux":
-                return _linux_candidates(platform.machine())
-            case "NetBSD" | "OpenBSD" | "FreeBSD" | "Darwin":
-                return _bsd_candidates(system, platform.processor())
+        system, machine, processor = platform.system(), platform.machine(), platform.processor()
+        match system, machine, processor:
+            case "Linux", "x86_64", _:
+                return (Backend.X86_64_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_GAS_INTEL,
+                        Backend.X86_64_GAS_ATT, Backend.X86_64_LINUX_SYSCALLS_GAS_ATT,
+                        Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM)
+            case "FreeBSD", "amd64", "amd64":
+                return Backend.X86_64_GAS_INTEL, Backend.X86_64_GAS_ATT, Backend.X86_64_NASM
+            case ("Linux", "i686", _) | ("OpenBSD", _, "i386"):
+                return Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_32_NASM
+            case "NetBSD"|"OpenBSD", _, "aarch64":
+                return Backend.ARM64,
+            case ("Linux", "armv7l", _) | ("NetBSD", _, "earmv7hf"):
+                return Backend.ARM32_THUMB, Backend.ARM32
+            case "Linux", "riscv64", _:
+                return Backend.RISCV64,
+            case "Darwin", _, "powerpc":
+                return Backend.PPC32,
             case _:
-                raise NotImplementedError(f"unsupported or unknown OS: {system}")
+                if processor in (machine, ''):
+                    hardware = machine
+                else:
+                    hardware = f"{machine} ({processor})"
+                raise NotImplementedError(f"unsupported or unknown platform: {system} on {hardware}")
 
     @staticmethod
     def suggest() -> Backend:
