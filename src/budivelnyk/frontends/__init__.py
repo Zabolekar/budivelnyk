@@ -88,8 +88,10 @@ def _intermediate_to_shared(intermediate: AST, output_path: str, backend: Backen
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
-        SHARED = "-dynamiclib" if system() == "Darwin" else "-shared"
-        run_and_maybe_fail("cc", "-z", "noexecstack", SHARED, object_path, "-o", output_path)
+        if system() == "Darwin":
+            run_and_maybe_fail("cc", object_path, "-o", output_path, "-dynamiclib")
+        else:
+            run_and_maybe_fail("cc", object_path, "-o", output_path, "-z", "noexecstack", "-shared")
 
 
 def _intermediate_to_asm_file(intermediate: AST, output_path: str, backend: Backend) -> None:
