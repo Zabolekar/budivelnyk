@@ -38,7 +38,7 @@ class Backend(enum.Enum):
                 return (Backend.X86_64_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_GAS_INTEL,
                         Backend.X86_64_GAS_ATT, Backend.X86_64_LINUX_SYSCALLS_GAS_ATT,
                         Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM)
-            case "FreeBSD", "amd64", "amd64":
+            case ("FreeBSD", "amd64", "amd64") | ("Darwin", "x86_64", _):
                 return Backend.X86_64_GAS_INTEL, Backend.X86_64_GAS_ATT, Backend.X86_64_NASM
             case ("Linux", "i686", _) | ("OpenBSD", _, "i386"):
                 return Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_32_NASM

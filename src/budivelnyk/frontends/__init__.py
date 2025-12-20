@@ -81,9 +81,10 @@ def _intermediate_to_shared(intermediate: AST, output_path: str, backend: Backen
         asm_path, object_path = asm_file.name, object_file.name
         _intermediate_to_asm_file(intermediate, asm_path, backend=backend)
         # assemble:
+        # TODO: here, too, the proper way would be not to check system but to differentiate between ELF and Mach-O backends.
         if nasm:
             bits = 32 if backend == Backend.X86_32_NASM else 64
-            FORMAT = "-felf" + str(bits)
+            FORMAT = ("-fmacho" if system() == "Darwin" else "-felf") + str(bits)
             run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path)
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)

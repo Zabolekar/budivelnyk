@@ -1,9 +1,17 @@
 from typing import Iterator
+from platform import system  # TODO: this is a quick hack. A proper way would be to differentiate between ELF and Mach-O backends.
 
 from ..intermediate import (
     AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
+
+
+if system() == "Darwin":
+    putchar, getchar = "_putchar", "_getchar"
+else:
+    putchar, getchar = "putchar", "getchar"
+
 
 def generate_x86_64_gas_intel(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
     yield from _generate_prologue_gas()
@@ -20,16 +28,24 @@ def generate_x86_64_nasm(intermediate: AST, *, linux_syscalls: bool) -> Iterator
 def _generate_prologue_gas() -> Iterator[str]:
     yield '    .intel_syntax noprefix'
     yield ''
-    yield '    .globl run'
-    yield '    .type run, @function'  # TODO: inconsistent, do it in NASM or don't do it in GAS
-    yield 'run:'
+    if system() == 'Darwin':
+        yield '    .globl _run'
+        yield '_run:'
+    else:
+        yield '    .globl run'
+        yield '    .type run, @function'  # TODO: inconsistent, do it in NASM or don't do it in GAS
+        yield 'run:'
 
 
 def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
-    yield '    global run'
     if not linux_syscalls:
-        yield '    extern getchar, putchar'  # TODO: eliminate if IO not used, explain why not needed for i486
-    yield 'run:'
+        yield f'    extern {getchar}, {putchar}'  # TODO: eliminate if IO not used, explain why not needed for i486
+    if system() == 'Darwin':
+        yield '    global _run'
+        yield '_run:'
+    else:
+        yield '    global run'
+        yield 'run:'
 
 
 def _generate_epilogue() -> Iterator[str]:
@@ -39,10 +55,10 @@ def _generate_epilogue() -> Iterator[str]:
 def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_label: str='') -> Iterator[str]:
     if nasm:
         ptr = ""
-        plt = " wrt ..plt"
+        plt = "" if system() == "Darwin" else " wrt ..plt"
     else:
         ptr = " ptr"
-        plt = ""  # "@plt" would work, too
+        plt = "" if system() == "Darwin" else "@plt"  # "" should work everywhere, TODO: understand/document
 
     loop_id = 0
     input_id = 0
@@ -78,7 +94,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_l
                 else:
                     yield  '    push  rdi'
                     yield f'    movzx rdi, byte{ptr} [rdi]'
-                    sequence = [f'    call  putchar{plt}', '    mov   rdi, rax'] * n
+                    sequence = [f'    call  {putchar}{plt}', '    mov   rdi, rax'] * n
                     yield from sequence[:-1]
                     yield  '    pop   rdi'
             case Input(n):
@@ -101,7 +117,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_l
                     input_id += 1
                 else:
                     yield  '    push  rdi'
-                    yield from [f'    call  getchar{plt}'] * n
+                    yield from [f'    call  {getchar}{plt}'] * n
                     yield  '    pop   rdi'
                     # EOF handling: replace negative values with 0.
                     yield  '    xor   edx, edx'

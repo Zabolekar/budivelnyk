@@ -1,9 +1,18 @@
 from typing import Iterator
+from platform import system  # TODO: quick hack, a proper solution would be to differentiate between ELF and Mach-O backends.
+
 
 from ..intermediate import (
     AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
+
+
+if system() == "Darwin":
+    putchar, getchar = "_putchar", "_getchar"
+else:
+    putchar, getchar = "putchar", "getchar"
+
 
 def generate_x86_64_att(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
     yield from _generate_prologue()
@@ -12,9 +21,13 @@ def generate_x86_64_att(intermediate: AST, *, linux_syscalls: bool) -> Iterator[
 
 
 def _generate_prologue() -> Iterator[str]:
-    yield '    .globl run'
-    yield '    .type run, @function'
-    yield 'run:'
+    if system() == "Darwin":
+        yield '    .globl _run'
+        yield '_run:'
+    else: 
+        yield '    .globl run'
+        yield '    .type run, @function'
+        yield 'run:'
 
 
 def _generate_epilogue() -> Iterator[str]:
@@ -56,7 +69,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, parent_label: str=''
                 else:
                     yield '    pushq  %rdi'
                     yield '    movzbq (%rdi), %rdi'
-                    sequence = ['    call   putchar', '    mov    %rax, %rdi'] * n
+                    sequence = [f'    call   {putchar}', '    mov    %rax, %rdi'] * n
                     yield from sequence[:-1]
                     yield '    popq   %rdi'
             case Input(n):
@@ -79,7 +92,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, parent_label: str=''
                     input_id += 1
                 else:
                     yield '    pushq  %rdi'
-                    yield from ['    call   getchar'] * n
+                    yield from [f'    call   {getchar}'] * n
                     yield '    popq   %rdi'
                     # EOF handling: replace negative values with 0.
                     yield '    xorl   %edx, %edx'
