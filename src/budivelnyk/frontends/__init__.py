@@ -1,14 +1,13 @@
 from typing import Callable, Iterator, TypeVar, Type
 import shutil
-from ctypes import CDLL, POINTER, c_ubyte
 from platform import system
 from tempfile import NamedTemporaryFile
 from abc import ABC, abstractmethod
 
 from ..intermediate import AST
-from ..tape import Tape
+from ..tape import Tape, Head, Machine
 from ..backends import Backend
-from ..backends.jit import intermediate_to_function, UseJIT, jit_implemented
+from ..backends.jit import intermediate_to_function, shared_to_function, UseJIT, jit_implemented
 from .helpers import run_and_maybe_fail
 
 
@@ -22,7 +21,7 @@ class Frontend(ABC):
         ...
 
     @classmethod
-    def to_function(cls: Type[T], code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]:
+    def to_function(cls: Type[T], code: str, *, use_jit: UseJIT = UseJIT.default()) -> Machine:
         intermediate: AST = cls.to_intermediate(code)
         match use_jit:
             case UseJIT.LIBC:
@@ -30,12 +29,10 @@ class Frontend(ABC):
             case UseJIT.SYSCALLS:
                 return intermediate_to_function(intermediate, linux_syscalls=True)
             case UseJIT.NO:
-                with NamedTemporaryFile() as library_file:
-                    library_path = library_file.name
-                    _intermediate_to_shared(intermediate, library_path, Backend.suggest())
-                    func = CDLL(library_path).run
-                    func.restype = POINTER(c_ubyte) 
-                    return func
+                with NamedTemporaryFile() as shared_file:
+                    path = shared_file.name
+                    _intermediate_to_shared(intermediate, path, Backend.suggest())
+                    return shared_to_function(path)
 
     @classmethod
     def to_asm(cls: Type[T], code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]:
@@ -46,7 +43,6 @@ class Frontend(ABC):
     def file_to_asm_file(cls: Type[T], input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None:
         with open(input_path) as input_file:
             code = input_file.read()
-
         cls._to_asm_file(code, output_path, backend=backend)
 
     @classmethod
@@ -58,13 +54,11 @@ class Frontend(ABC):
     def file_to_shared(cls: Type[T], input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None:
         with open(input_path) as input_file:
             code = input_file.read()
-
         cls.to_shared(code, output_path, backend=backend)
 
     @classmethod
     def _to_asm_file(cls: Type[T], code: str, output_path: str, backend: Backend) -> None:
         lines = cls.to_asm(code, backend=backend)
-
         with open(output_path, 'w') as output_file:
             print(*lines, sep="\n", file=output_file)
 

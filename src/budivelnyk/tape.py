@@ -1,8 +1,10 @@
 from ctypes import Array, POINTER, c_ubyte
-from typing import TypeAlias, no_type_check
+from typing import TypeAlias, no_type_check, Callable
 
 
 Tape: TypeAlias = Array[c_ubyte]
+Head: TypeAlias = POINTER(c_ubyte)  # type: ignore[valid-type]
+Machine: TypeAlias = Callable[[Tape|Head], Head]
 
 
 def tape_of_size(size: int) -> Tape:

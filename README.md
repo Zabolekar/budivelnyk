@@ -178,22 +178,22 @@ The disadvantages, compared to a hypothetical implementation that allocates more
 
 Note that some bf programs, e.g. `+[>+]`, require an infinitely long tape. They can't be executed on a real computer. Allocating more tape on demand won't solve that.
 
-## Tapes in Python
+## ## Calling BF from Python
 
-The proper way to create a tape is to use the `tape_of_size(int) -> Tape` and `tape_with_contents(bytes|bytearray) -> Tape` functions we provide,
-which return a mutable `ctypes` array of unsigned bytes:
+The recommended way to create a tape is to use the `tape_of_size(int) -> Tape` and `tape_with_contents(bytes|bytearray) -> Tape` functions. A `Tape` is a mutable `ctypes` array of unsigned bytes, a `Head` is a `ctypes` pointer to an unsigned byte, presumably to an element of such an array. The type `Machine` is an alias for `Callable[[Tape|Head], Head]`.
+
+The recommended way to call a shared bf library from Python is to load it with the `shared_to_function(str) -> Machine`, which is a wrapper around `ctypes.CDLL` that takes care of the return type.
 
 ```python
-from ctypes import CDLL
-from budivelnyk.tape import tape_with_contents, tape_of_size
+import budivelnyk as bd
 
-my_lib = CDLL("./mylib.so")
+run = bd.shared_to_function("./mylib.so")
 
-tape = tape_with_contents(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
-my_lib.run(tape)
+tape = bd.tape_with_contents(b"test")  # creates a tape with 4 cells, copies 't', 'e', 's', 't' to it
+run(tape)  # ignoring the return value
 
-other_tape = tape_of_size(4)  # creates a tape with 4 cells, initialized to zero
-my_lib.run(other_tape)
+other_tape = bd.tape_of_size(4)  # creates a tape with 4 cells, initialized to zero
+run(other_tape)
 ```
 
 The `as_tape(buffer, size: int) -> Tape` function can be used to wrap an existing mutable buffer, e.g. a `numpy` array:
@@ -224,10 +224,10 @@ The function is very lenient and assumes that you know what you're doing. If you
 Sometimes it seems convenient to use a `bytes` object as the function argument:
 
 ```python
-from ctypes import CDLL
+from budivelnyk import shared_to_function
 
-my_lib = CDLL("./mylib.so")
-my_lib.run(b"test")
+run = shared_to_function("./mylib.so")
+run(b"test")
 ```
 
 If your code doesn't modify the tape, it may work, but do not rely on this. **Do not ever** do this if your code modifies the tape. This will cause bizarre bugs, e.g. literals like `b"\0"` evaluating to `b"\xff"`. The Python interpreter expects all `bytes` objects to be immutable and reuses them.
@@ -262,15 +262,19 @@ code on purpose other than for testing the compiler, so we emit a warning.
 
 To summarize, the package provides the following types:
 
-- `Tape`, `Backend`, `UseJIT`
+- `Tape`, `Head`, `Machine`, `Backend`, `UseJIT`
 
-And the following functions:
+And the following bf-specific functions:
 
-- `Bf.to_function(code: str, *, use_jit: UseJIT = UseJIT.default()) -> Callable[[Tape], None]`
+- `Bf.to_function(code: str, *, use_jit: UseJIT = UseJIT.default()) -> Machine`
 - `Bf.to_asm(code: str, *, backend: Backend = Backend.suggest()) -> Iterator[str]`
 - `Bf.file_to_asm_file(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
 - `Bf.to_shared(code: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
 - `Bf.file_to_shared(input_path: str, output_path: str, *, backend: Backend = Backend.suggest()) -> None`
+
+And the following frontend-independent function:
+
+- `shared_to_function(library_path: str) -> Machine`
 
 And the following global variable:
 

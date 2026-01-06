@@ -6,7 +6,7 @@ import platform
 from enum import Enum, auto
 from typing import Callable
 
-from ...tape import Tape
+from ...tape import Tape, Head, Machine
 from ...intermediate import AST
 from .x86_64 import generate_x86_64
 
@@ -32,18 +32,24 @@ def _intermediate_to_machine_code(intermediate: AST, linux_syscalls: bool) -> by
         raise NotImplementedError("JIT is only implemented for Linux on x86_64")
 
 
-def _machine_code_to_function(code: bytes) -> Callable[[Tape], None]:
+def _machine_code_to_function(code: bytes) -> Machine:
     size = len(code)
     memory = _executable_memory(size)
     memory.write(code)
     array_t = ctypes.c_byte * size
     array_view = array_t.from_buffer(memory)
-    return ctypes.cast(array_view, ctypes.CFUNCTYPE(ctypes.POINTER(ctypes.c_ubyte)))
+    return ctypes.cast(array_view, ctypes.CFUNCTYPE(Head))
 
 
-def intermediate_to_function(intermediate: AST, *, linux_syscalls: bool) -> Callable[[Tape], None]:
+def intermediate_to_function(intermediate: AST, *, linux_syscalls: bool) -> Machine:
     code: bytes = _intermediate_to_machine_code(intermediate, linux_syscalls)
     return _machine_code_to_function(code)
+
+
+def shared_to_function(library_path: str) -> Machine:
+    func = ctypes.CDLL(library_path).run
+    func.restype = Head
+    return func
 
 
 # TODO: error handling, especially on platforms that aren't Linux, and tests
