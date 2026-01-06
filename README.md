@@ -107,7 +107,9 @@ from budivelnyk import Bf
 Bf.file_to_shared("input.bf", "liboutput.so")
 ```
 
-The compiler always generates exactly one function named `run` that you can use as if its definition were `void run(unsigned char*)`. The created library can be used from any language that supports loading a shared library and passing a byte array to a function from that library.
+The compiler always generates exactly one function named `run` that you can use as if its definition were `unsigned char* run(unsigned char*)`. The created library can be used from any language that supports loading a shared library, passing a pointer to a byte array to a function from that library, and interpreting its return value as another pointer to a byte array. In bf terms (or Turing machine terms), the byte array in question is called a *tape* and its elements are called *cells*. A machine has a *head* positioned over a cell. The input pointer represents the head position before the execution starts, and the returned pointer represents the head position after the execution halts.
+
+Normally, you shouldn't need the return value, and can simply declare the function as `void run(unsigned char*)`. Knowing the head position after the machine has finished running is, however, useful if you need to decompose a large computation into smaller steps: after each step, you can inspect the tape, log the elapsed time etc., and then pass the saved return value to the next function.
 
 ## Calling BF from C
 
@@ -123,7 +125,7 @@ If the shared library exists at compilation time, you can call it from C like th
 ```c
 // main.c
 
-void run(unsigned char*);
+void run(unsigned char*); // ignoring the return value
 
 int main()
 {
