@@ -178,7 +178,7 @@ The disadvantages, compared to a hypothetical implementation that allocates more
 
 Note that some bf programs, e.g. `+[>+]`, require an infinitely long tape. They can't be executed on a real computer. Allocating more tape on demand won't solve that.
 
-## ## Calling BF from Python
+## Calling BF from Python
 
 The recommended way to create a tape is to use the `tape_of_size(int) -> Tape` and `tape_with_contents(bytes|bytearray) -> Tape` functions. A `Tape` is a mutable `ctypes` array of unsigned bytes, a `Head` is a `ctypes` pointer to an unsigned byte, presumably to an element of such an array. The type `Machine` is an alias for `Callable[[Tape|Head], Head]`.
 
