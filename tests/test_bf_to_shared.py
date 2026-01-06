@@ -46,7 +46,7 @@ def test_print_hello(backend, library_path):
     call_hello = [sys.executable, "tests/py/call_hello.py", library_path]
     result = run(call_hello, capture_output=True)
     result.check_returncode()
-    assert result.stdout == b"hello\n"
+    assert result.stdout == b"hello\n"  # TODO: test if output flushes properly
 
 
 @pytest.mark.parametrize("backend", backends)
