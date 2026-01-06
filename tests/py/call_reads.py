@@ -1,7 +1,7 @@
 from sys import argv
-from ctypes import CDLL, create_string_buffer
+import budivelnyk as bd
 
-libreads = CDLL(argv[1])
-buffer = create_string_buffer(1)
-libreads.run(buffer)
+libreads = bd.shared_to_function(argv[1])
+buffer = bd.tape_of_size(1)
+libreads(buffer)
 assert bytes(buffer) == b"c"

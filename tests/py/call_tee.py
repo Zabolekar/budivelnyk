@@ -1,7 +1,6 @@
 from sys import argv
-from ctypes import CDLL
-from budivelnyk import tape_of_size
+from budivelnyk import tape_of_size, shared_to_function
 
-libtee = CDLL(argv[1])
+libtee = shared_to_function(argv[1])
 buffer = tape_of_size(1)
-libtee.run(buffer)
+libtee(buffer)

@@ -1,6 +1,5 @@
-from budivelnyk import Bf, jit_implemented, UseJIT, tape_with_contents, Backend
+from budivelnyk import Bf, jit_implemented, UseJIT, tape_with_contents, Backend, shared_to_function
 from helpers import JIT_NOT_IMPLEMENTED_MESSAGE, library_path 
-import ctypes
 import pytest
 
 
@@ -29,8 +28,6 @@ def test_without_jit():
 @pytest.mark.parametrize("backend", backends)
 def test_backends(backend, library_path):
     Bf.to_shared(">", library_path, backend=backend)
-    library = ctypes.CDLL(library_path)
-    func = library.run
-    func.restype = ctypes.POINTER(ctypes.c_ubyte)
+    func = shared_to_function(library_path)
     common_part(func)
 

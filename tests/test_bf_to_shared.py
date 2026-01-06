@@ -1,8 +1,7 @@
 import sys
-from ctypes import CDLL
 from subprocess import run, Popen, PIPE, TimeoutExpired
 import pytest
-from budivelnyk import Bf, Backend, tape_with_contents
+from budivelnyk import Bf, Backend, tape_with_contents, shared_to_function
 from helpers import library_path
 
 
@@ -14,9 +13,9 @@ def test_increment_string(backend, library_path):
     bf = "[+>]"
     Bf.to_shared(bf, library_path, backend=backend)
 
-    libinc = CDLL(library_path)
+    libinc = shared_to_function(library_path)
     buffer = tape_with_contents(b"Gdkkn+\x1f`rrdlakx \x00")
-    libinc.run(buffer)
+    libinc(buffer)
     assert bytes(buffer) == b"Hello, assembly!\x00"
 
 
@@ -25,16 +24,16 @@ def test_zero_minus_one(backend, library_path):
     bf = "[-]-"
     Bf.to_shared(bf, library_path, backend=backend)
 
-    libzmo = CDLL(library_path)
+    libzmo = shared_to_function(library_path)
     a = tape_with_contents(b"\x00")
     b = tape_with_contents(b" ")
     c = tape_with_contents(b"2")
-    libzmo.run(a)
-    libzmo.run(b)
-    libzmo.run(c)
+    libzmo(a)
+    libzmo(b)
+    libzmo(c)
     assert a[:] == b[:] == c[:] == [255]
     d = tape_with_contents(b"1234")
-    libzmo.run(d)
+    libzmo(d)
     assert bytes(d) == b"\xff234"
 
 
@@ -71,11 +70,11 @@ def test_composable_fibs(backend, library_path):
     bf = "tests/bf/fibs.bf"
     Bf.file_to_shared(bf, library_path, backend=backend)
 
-    libfibs = CDLL(library_path)
+    libfibs = shared_to_function(library_path)
     buffer = tape_with_contents(bytes([0, 1, 0, 0]))
     fibs = []
     for i in range(14):
-        libfibs.run(buffer)
+        libfibs(buffer)
         byte = buffer[0]
         fibs.append(byte)
     # 121 because the cell overflows:

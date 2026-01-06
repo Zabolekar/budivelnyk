@@ -1,6 +1,6 @@
 from sys import argv
-from ctypes import CDLL, create_string_buffer
+import budivelnyk as bd
 
-libhello = CDLL(argv[1])
-buffer = create_string_buffer(3)
-libhello.run(buffer)
+libhello = bd.shared_to_function(argv[1])
+buffer = bd.tape_of_size(3)
+libhello(buffer)
