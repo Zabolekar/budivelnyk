@@ -185,7 +185,7 @@ which return a mutable `ctypes` array of unsigned bytes:
 
 ```python
 from ctypes import CDLL
-from budivelnyk import make_tape
+from budivelnyk.tape import tape_with_contents, tape_of_size
 
 my_lib = CDLL("./mylib.so")
 
