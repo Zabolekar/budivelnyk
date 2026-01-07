@@ -40,7 +40,7 @@ def _generate_prologue_nasm() -> Iterator[str]:
     yield '    mov   ebx, dword [esp]'
     yield '    ret'
     yield ''
-    yield '    global run'
+    yield '    global run:function'
     yield 'run:'
     yield '    push  ebx'
     yield '    call  get_pc'

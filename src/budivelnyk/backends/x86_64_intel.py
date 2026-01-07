@@ -33,7 +33,7 @@ def _generate_prologue_gas() -> Iterator[str]:
         yield '_run:'
     else:
         yield '    .globl run'
-        yield '    .type run, @function'  # TODO: inconsistent, do it in NASM or don't do it in GAS
+        yield '    .type run, @function'
         yield 'run:'
 
 
@@ -41,10 +41,10 @@ def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
     if not linux_syscalls:
         yield f'    extern {getchar}, {putchar}'  # TODO: eliminate if IO not used, explain why not needed for i486
     if system() == 'Darwin':
-        yield '    global _run'
+        yield '    global _run'  # TODO: check if :function gives an error message
         yield '_run:'
     else:
-        yield '    global run'
+        yield '    global run:function'
         yield 'run:'
 
 
