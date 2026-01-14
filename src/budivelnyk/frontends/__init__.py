@@ -64,7 +64,7 @@ class Frontend(ABC):
 
 
 def _intermediate_to_shared(intermediate: AST, output_path: str, backend: Backend) -> None:
-    nasm: bool = backend in (Backend.X86_32_NASM, Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM)
+    nasm: bool = backend in (Backend.X86_32_LIBC_ELF_NASM, Backend.X86_64_LIBC_TODO_NASM, Backend.X86_64_LINUX_SYSCALLS_ELF_NASM)
     if not shutil.which("cc"):
         raise RuntimeError("cc not found")
     if nasm and not shutil.which("nasm"):
@@ -79,7 +79,7 @@ def _intermediate_to_shared(intermediate: AST, output_path: str, backend: Backen
         # TODO: but, actually, an attempt to compile Mach-O on an ELF system (or the other way around) with the regular GCC *will* fail, with a bad error message.
         # TODO: the solution is to check system() and write a better error message. Cross-compilation is out of scope.
         if nasm:
-            bits = 32 if backend == Backend.X86_32_NASM else 64
+            bits = 32 if backend == Backend.X86_32_LIBC_ELF_NASM else 64
             FORMAT = ("-fmacho" if system() == "Darwin" else "-felf") + str(bits)
             run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path)
         else:

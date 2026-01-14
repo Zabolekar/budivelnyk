@@ -16,31 +16,35 @@ Note: this bf variant is *not* Turing complete. For that, you'd need either unbo
 
 Supported backends are, in alphabetical order:
 
-- `ARM32`: 32-bit ARM, A32 instruction set.
+- `ARM32_LIBC_ELF_USUAL`: 32-bit ARM, A32 instruction set.
   - Tested on Linux, NetBSD.
-- `ARM32_THUMB`: 32-bit ARM, T32 instruction set aka Thumb-2.
+- `ARM32_THUMB_LIBC_ELF_USUAL`: 32-bit ARM, T32 instruction set aka Thumb-2.
   - Tested on Linux, NETBSD.
-- `ARM64`: 64-bit ARM aka AArch64.
+- `ARM64_LIBC_ELF_USUAL`: 64-bit ARM aka AArch64.
   - Tested on NetBSD, OpenBSD.
-- `PPC32`: 32-bit PowerPC.
+- `PPC32_LIBC_MACHO_USUAL`: 32-bit PowerPC.
   - Tested on Mac OS X Leopard.
-- `RISCV64`: 64-bit RISC-V.
+- `RISCV64_LIBC_ELF_USUAL`: 64-bit RISC-V.
   - Tested on Linux.
-- `X86_32_GAS_ATT`, `X86_32_GAS_INTEL`, `X86_32_NASM`: IA-32 aka i386 aka 32-bit x86.
+- `X86_32_LIBC_ELF_GAS_ATT`, `X86_32_LIBC_ELF_GAS_INTEL`, `X86_32_LIBC_ELF_NASM`: IA-32 aka i386 aka 32-bit x86.
   - Tested on OpenBSD, occasionally tested on Linux.
-- `X86_64_GAS_ATT`, `X86_64_GAS_INTEL`, `X86_64_NASM`: x86_64 aka AMD64.
+- `X86_64_LIBC_TODO_GAS_ATT`, `X86_64_LIBC_TODO_GAS_INTEL`, `X86_64_LIBC_TODO_NASM`: x86_64 aka AMD64.
   - Tested on Linux, occasionally tested on FreeBSD.
-- `X86_64_LINUX_SYSCALLS_GAS_ATT`, `X86_64_LINUX_SYSCALLS_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
+- `X86_64_LINUX_SYSCALLS_ELF_GAS_ATT`, `X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_ELF_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
   - Linux only.
 
-As you see, `X86_32_*`, `X86_64_*`, and `X86_64_LINUX_SYSCALLS_*` each come in three variants. They generate the same instructions, but the syntax is different:
+A backend name consists of:
+1. Instruction set, e.g. `X86_64`, `RISCV64`, `ARM32`, `ARM32_THUMB`
+2. What to use for input and output, e.g. `LIBC` or `LINUX_SYSCALLS`
+3. The intended executable format, e.g. `ELF` or `MACHO`. We don't produce any executable files ourselves - only with external assemblers and linkers - but the intended format still affects the assembly language we generate, e.g. whether to prefix the symbol names with an underscore).
+4. The assembly language syntax. For example, the `X86_32_*`  and `X86_64_*` targets have three varians each. They will produce the same instructions when assembled, but are written differently:
 - `X86_*_GAS_ATT` backends generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
 - `X86_*_GAS_INTEL` backends generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
 - `X86_*_NASM` backends generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
 
-**Note:** GAS code in Intel syntax and NASM code look superficially similar, but there are important differences e.g. in how they handle the Global Offset Table.
+The `USUAL` syntax is a catch-all term for "we only use one syntax for this platform, and don't know if it has a name".
 
-Output of `X86_32_NASM` and `X86_64_NASM` should be assembled with NASM. For every other backend, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
+Output of `X86_*_NASM` should be assembled with NASM. For every other backend, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
 
 Supported linkers are GNU `ld` and LLVM's `lld`.
 
@@ -74,7 +78,7 @@ Example usage:
 
 ```pycon
 >>> from budivelnyk import Bf, Backend
->>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_GAS_INTEL)
+>>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_LIBC_TODO_GAS_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -87,14 +91,14 @@ run:
     ret
 ```
 
-You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine, the default backend is `X86_64_GAS_INTEL`.
+You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine running Linux or *BSD, the default backend is `X86_64_LIBC_TODO_GAS_INTEL`.
 
 For convenience, there is also `Bf.file_to_asm_file` that accepts input and output paths:
 
 ```python
 from budivelnyk import Bf, Backend
 
-Bf.file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_ATT)
+Bf.file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_LIBC_TODO_GAS_ATT)
 ```
 
 ## Creating Shared Libraries
