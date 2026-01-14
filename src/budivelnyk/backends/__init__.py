@@ -41,6 +41,9 @@ class Syntax(enum.Enum):
     USUAL = enum.auto()
 
 
+X86_SYNTAXES = "gas_att", "gas_intel", "nasm"
+
+
 class Backend(enum.Enum):
     ARM32_LIBC_ELF_USUAL = "arm32-libc-elf-usual"
     ARM32_THUMB_LIBC_ELF_USUAL = "arm32_thumb-libc-elf-usual"
@@ -68,25 +71,28 @@ class Backend(enum.Enum):
         return f"Backend({self.value!r})"
 
     @staticmethod
-    def candidates() -> list[Backend]:
+    def _candidates() -> Iterator[Backend]:
         system, machine, processor = platform.system(), platform.machine(), platform.processor()
         match system, machine, processor:
             case "Linux", "x86_64", _:
-                return [Backend.X86_64_LIBC_TODO_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL,
-                        Backend.X86_64_LIBC_TODO_GAS_ATT, Backend.X86_64_LINUX_SYSCALLS_ELF_GAS_ATT,
-                        Backend.X86_64_LIBC_TODO_NASM, Backend.X86_64_LINUX_SYSCALLS_ELF_NASM]
+                for syntax in X86_SYNTAXES:
+                    for io in "libc", "linux_syscalls":
+                        yield Backend(f"x86_64-{io}-elf-{syntax}")
             case ("FreeBSD", "amd64", "amd64") | ("Darwin", "x86_64", _):
-                return [Backend.X86_64_LIBC_TODO_GAS_INTEL, Backend.X86_64_LIBC_TODO_GAS_ATT, Backend.X86_64_LIBC_TODO_NASM]
+                for syntax in X86_SYNTAXES:
+                    yield Backend(f"x86_64-libc-elf-{syntax}")
             case ("Linux", "i686", _) | ("OpenBSD", _, "i386"):
-                return [Backend.X86_32_LIBC_ELF_GAS_INTEL, Backend.X86_32_LIBC_ELF_GAS_ATT, Backend.X86_32_LIBC_ELF_NASM]
-            case "NetBSD"|"OpenBSD", _, "aarch64":
-                return [Backend.ARM64_LIBC_ELF_USUAL]
+                for syntax in X86_SYNTAXES:
+                    yield Backend(f"x86_32-libc-elf-{syntax}")
+            case ("NetBSD"|"OpenBSD"), _, "aarch64":
+                yield Backend.ARM64_LIBC_ELF_USUAL
             case ("Linux", "armv7l", _) | ("NetBSD", _, "earmv7hf"):
-                return [Backend.ARM32_LIBC_ELF_USUAL, Backend.ARM32_THUMB_LIBC_ELF_USUAL]
+                yield Backend.ARM32_LIBC_ELF_USUAL
+                yield Backend.ARM32_THUMB_LIBC_ELF_USUAL
             case "Linux", "riscv64", _:
-                return [Backend.RISCV64_LIBC_ELF_USUAL]
+                yield Backend.RISCV64_LIBC_ELF_USUAL
             case "Darwin", _, "powerpc":
-                return [Backend.PPC32_LIBC_MACHO_USUAL]
+                yield Backend.PPC32_LIBC_MACHO_USUAL
             case _:
                 if processor in (machine, ''):
                     hardware = machine
@@ -95,8 +101,12 @@ class Backend(enum.Enum):
                 raise NotImplementedError(f"unsupported or unknown platform: {system} on {hardware}")
 
     @staticmethod
+    def candidates() -> list[Backend]:
+        return list(Backend._candidates())
+
+    @staticmethod
     def suggest() -> Backend:
-        return Backend.candidates()[0]
+        return next(Backend._candidates())
 
     def intermediate_to_asm(self, intermediate: AST) -> Iterator[str]:
         match self:
