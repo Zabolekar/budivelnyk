@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from ..intermediate import AST
 from ..tape import Tape, Head, Machine
-from ..backends import Backend
+from ..backends import Backend, InstructionSet, Format, Syntax
 from ..backends.jit import intermediate_to_function, shared_to_function, UseJIT, jit_implemented
 from .helpers import run_and_maybe_fail
 
@@ -64,28 +64,32 @@ class Frontend(ABC):
 
 
 def _intermediate_to_shared(intermediate: AST, output_path: str, backend: Backend) -> None:
-    nasm: bool = backend in (Backend.X86_32_LIBC_ELF_NASM, Backend.X86_64_LIBC_TODO_NASM, Backend.X86_64_LINUX_SYSCALLS_ELF_NASM)
+    nasm: bool = backend.syntax == Syntax.NASM
+    macho: bool = backend.format == Format.MACHO
     if not shutil.which("cc"):
         raise RuntimeError("cc not found")
     if nasm and not shutil.which("nasm"):
         raise RuntimeError("nasm not found")
+
+    darwin: bool = system() == "Darwin"
+    if macho and not darwin:
+        raise RuntimeError("generating Mach-O shared files is only supported on Darwin, no cross-compilation")
+    if darwin and not macho:
+        raise RuntimeError("generating ELF shared files is not supported on Darwin, no cross-compilation")
 
     with (NamedTemporaryFile(suffix=".s") as asm_file,
           NamedTemporaryFile(suffix=".o") as object_file):
         asm_path, object_path = asm_file.name, object_file.name
         _intermediate_to_asm_file(intermediate, asm_path, backend=backend)
         # assemble:
-        # TODO: here, too, the proper way would be not to check system but to differentiate between ELF and Mach-O backends.
-        # TODO: but, actually, an attempt to compile Mach-O on an ELF system (or the other way around) with the regular GCC *will* fail, with a bad error message.
-        # TODO: the solution is to check system() and write a better error message. Cross-compilation is out of scope.
         if nasm:
-            bits = 32 if backend == Backend.X86_32_LIBC_ELF_NASM else 64
-            FORMAT = ("-fmacho" if system() == "Darwin" else "-felf") + str(bits)
+            bits = 32 if backend.instruction_set == InstructionSet.X86_32 else 64
+            FORMAT = "-f" + ("macho" if macho else "elf") + str(bits)
             run_and_maybe_fail("nasm", FORMAT, asm_path, "-o", object_path)
         else:
             run_and_maybe_fail("cc", "-c", asm_path, "-o", object_path)
         # link:
-        if system() == "Darwin":
+        if macho:
             run_and_maybe_fail("cc", object_path, "-o", output_path, "-dynamiclib")
         else:
             run_and_maybe_fail("cc", object_path, "-o", output_path, "-z", "noexecstack", "-shared")
