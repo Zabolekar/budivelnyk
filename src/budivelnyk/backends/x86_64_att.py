@@ -1,33 +1,29 @@
-from typing import Iterator
-from platform import system  # TODO: quick hack, a proper solution would be to differentiate between ELF and Mach-O backends.
-
-
+from __future__ import annotations
+from typing import Iterator, TYPE_CHECKING
+from .enums import Format, InputOutput
 from ..intermediate import (
     AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
+if TYPE_CHECKING:
+    from . import Backend
 
 
-if system() == "Darwin":
-    putchar, getchar = "_putchar", "_getchar"
-else:
-    putchar, getchar = "putchar", "getchar"
-
-
-def generate_x86_64_att(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
-    yield from _generate_prologue()
-    yield from _generate_body(intermediate, linux_syscalls)
+def generate_x86_64_att(intermediate: AST, backend: Backend) -> Iterator[str]:
+    yield from _generate_prologue(backend.format)
+    yield from _generate_body(intermediate, backend)
     yield from _generate_epilogue()
 
 
-def _generate_prologue() -> Iterator[str]:
-    if system() == "Darwin":
-        yield '    .globl _run'
-        yield '_run:'
-    else: 
-        yield '    .globl run'
-        yield '    .type run, @function'
-        yield 'run:'
+def _generate_prologue(format: Format) -> Iterator[str]:
+    match format:
+        case Format.MACHO:
+            yield '    .globl _run'
+            yield '_run:'
+        case Format.ELF:
+            yield '    .globl run'
+            yield '    .type run, @function'
+            yield 'run:'
 
 
 def _generate_epilogue() -> Iterator[str]:
@@ -35,7 +31,15 @@ def _generate_epilogue() -> Iterator[str]:
     yield '    ret'
 
 
-def _generate_body(intermediate: AST, linux_syscalls: bool, parent_label: str='') -> Iterator[str]:
+def _generate_body(intermediate: AST, backend: Backend, parent_label: str='') -> Iterator[str]:
+    match backend.format:
+        case Format.MACHO:
+            putchar, getchar = "_putchar", "_getchar"
+        case Format.ELF:
+            putchar, getchar = "putchar", "getchar"
+
+    linux_syscalls: bool = backend.io == InputOutput.LINUX_SYSCALLS
+
     loop_id = 0
     input_id = 0
     for node in intermediate:
@@ -105,7 +109,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, parent_label: str=''
                 yield f'start{label}:'
                 yield  '    cmpb   $0, (%rdi)'
                 yield f'    je     end{label}'
-                yield from _generate_body(body, linux_syscalls, label)
+                yield from _generate_body(body, backend, label)
                 yield f'    jmp    start{label}'
                 yield f'end{label}:'
                 loop_id += 1

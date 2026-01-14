@@ -28,8 +28,10 @@ Supported backends are, in alphabetical order:
   - Tested on Linux.
 - `X86_32_LIBC_ELF_GAS_ATT`, `X86_32_LIBC_ELF_GAS_INTEL`, `X86_32_LIBC_ELF_NASM`: IA-32 aka i386 aka 32-bit x86.
   - Tested on OpenBSD, occasionally tested on Linux.
-- `X86_64_LIBC_TODO_GAS_ATT`, `X86_64_LIBC_TODO_GAS_INTEL`, `X86_64_LIBC_TODO_NASM`: x86_64 aka AMD64.
+- `X86_64_LIBC_ELF_GAS_ATT`, `X86_64_LIBC_ELF_GAS_INTEL`, `X86_64_LIBC_ELF_NASM`: x86_64 aka AMD64 for ELF-based systems.
   - Tested on Linux, occasionally tested on FreeBSD.
+- `X86_64_LIBC_MACHO_GAS_ATT`, `X86_64_LIBC_MACHO_GAS_INTEL`, `X86_64_LIBC_MACHO_NASM`: x86_64 aka AMD64 for macOS.
+  - Tested on macOS Mojave.
 - `X86_64_LINUX_SYSCALLS_ELF_GAS_ATT`, `X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_ELF_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
   - Linux only.
 
@@ -78,7 +80,7 @@ Example usage:
 
 ```pycon
 >>> from budivelnyk import Bf, Backend
->>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_LIBC_TODO_GAS_INTEL)
+>>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_LIBC_ELF_GAS_INTEL)
 >>> print(*asm, sep="\n")
     .intel_syntax noprefix
 
@@ -91,14 +93,14 @@ run:
     ret
 ```
 
-You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine running Linux or *BSD, the default backend is `X86_64_LIBC_TODO_GAS_INTEL`.
+You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine running Linux or *BSD, the default backend is `X86_64_LIBC_ELF_GAS_INTEL`.
 
 For convenience, there is also `Bf.file_to_asm_file` that accepts input and output paths:
 
 ```python
 from budivelnyk import Bf, Backend
 
-Bf.file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_LIBC_TODO_GAS_ATT)
+Bf.file_to_asm_file("input.bf", "output.s", backend=Backend.X86_64_LIBC_ELF_GAS_ATT)
 ```
 
 ## Creating Shared Libraries

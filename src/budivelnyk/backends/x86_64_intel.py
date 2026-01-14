@@ -1,51 +1,50 @@
-from typing import Iterator
-from platform import system  # TODO: this is a quick hack. A proper way would be to differentiate between ELF and Mach-O backends.
-
+from __future__ import annotations
+from typing import Iterator, TYPE_CHECKING
+from .enums import Format, InputOutput
 from ..intermediate import (
     AST, Loop,
     Add, Subtract, Forward, Back, Output, Input
 )
+if TYPE_CHECKING:
+    from . import Backend
 
 
-if system() == "Darwin":
-    putchar, getchar = "_putchar", "_getchar"
-else:
-    putchar, getchar = "putchar", "getchar"
-
-
-def generate_x86_64_gas_intel(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
-    yield from _generate_prologue_gas()
-    yield from _generate_body(intermediate, linux_syscalls, nasm=False)
+def generate_x86_64_gas_intel(intermediate: AST, backend: Backend) -> Iterator[str]:
+    yield from _generate_prologue_gas(backend)
+    yield from _generate_body(intermediate, backend, nasm=False)
     yield from _generate_epilogue()
 
 
-def generate_x86_64_nasm(intermediate: AST, *, linux_syscalls: bool) -> Iterator[str]:
-    yield from _generate_prologue_nasm(linux_syscalls)
-    yield from _generate_body(intermediate, linux_syscalls, nasm=True)
+def generate_x86_64_nasm(intermediate: AST, backend: Backend) -> Iterator[str]:
+    yield from _generate_prologue_nasm(backend)
+    yield from _generate_body(intermediate, backend, nasm=True)
     yield from _generate_epilogue()
 
 
-def _generate_prologue_gas() -> Iterator[str]:
+def _generate_prologue_gas(backend: Backend) -> Iterator[str]:
     yield '    .intel_syntax noprefix'
     yield ''
-    if system() == 'Darwin':
-        yield '    .globl _run'
-        yield '_run:'
-    else:
-        yield '    .globl run'
-        yield '    .type run, @function'
-        yield 'run:'
+    match backend.format:
+        case Format.MACHO:
+            yield '    .globl _run'
+            yield '_run:'
+        case Format.ELF:
+            yield '    .globl run'
+            yield '    .type run, @function'
+            yield 'run:'
 
 
-def _generate_prologue_nasm(linux_syscalls: bool) -> Iterator[str]:
-    if not linux_syscalls:
-        yield f'    extern {getchar}, {putchar}'  # TODO: eliminate if IO not used, explain why not needed for i486
-    if system() == 'Darwin':
-        yield '    global _run'  # TODO: check if :function gives an error message
-        yield '_run:'
-    else:
-        yield '    global run:function'
-        yield 'run:'
+def _generate_prologue_nasm(backend: Backend) -> Iterator[str]:
+    match backend.format:
+        case Format.MACHO:
+            yield f'    extern _getchar, _putchar'  # TODO: eliminate if IO not used, check if needed at all
+            yield '    global _run:function'  # TODO: check if :function gives an error message
+            yield '_run:'
+        case Format.ELF:
+            if backend.io == InputOutput.LIBC:
+                yield f'    extern getchar, putchar'  # TODO: eliminate if IO not used, explain why not needed for i486
+            yield '    global run:function'
+            yield 'run:'
 
 
 def _generate_epilogue() -> Iterator[str]:
@@ -53,13 +52,21 @@ def _generate_epilogue() -> Iterator[str]:
     yield '    ret'
 
 
-def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_label: str='') -> Iterator[str]:
+def _generate_body(intermediate: AST, backend: Backend, nasm: bool, parent_label: str='') -> Iterator[str]:
+    match backend.format:
+        case Format.MACHO:
+            putchar, getchar = "_putchar", "_getchar"
+        case Format.ELF:
+            putchar, getchar = "putchar", "getchar"
+
+    linux_syscalls: bool = backend.io == InputOutput.LINUX_SYSCALLS
+
     if nasm:
         ptr = ""
-        plt = "" if system() == "Darwin" else " wrt ..plt"
+        plt = " wrt ..plt" if backend.format == Format.ELF else ""
     else:
         ptr = " ptr"
-        plt = "" if system() == "Darwin" else "@plt"  # "" should work everywhere, TODO: understand/document
+        plt = "@plt" if backend.format == Format.ELF else ""  # "" should work everywhere, TODO: understand/document
 
     loop_id = 0
     input_id = 0
@@ -130,7 +137,7 @@ def _generate_body(intermediate: AST, linux_syscalls: bool, nasm: bool, parent_l
                 yield f'start{label}:'
                 yield f'    cmp   byte{ptr} [rdi], 0'
                 yield f'    je    end{label}'
-                yield from _generate_body(body, linux_syscalls, nasm, label)
+                yield from _generate_body(body, backend, nasm, label)
                 yield f'    jmp   start{label}'
                 yield f'end{label}:'
                 loop_id += 1
