@@ -31,25 +31,25 @@ class Backend(enum.Enum):
     X86_64_LINUX_SYSCALLS_NASM = enum.auto()
 
     @staticmethod
-    def candidates() -> tuple[Backend, ...]:
+    def candidates() -> list[Backend]:
         system, machine, processor = platform.system(), platform.machine(), platform.processor()
         match system, machine, processor:
             case "Linux", "x86_64", _:
-                return (Backend.X86_64_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_GAS_INTEL,
+                return [Backend.X86_64_GAS_INTEL, Backend.X86_64_LINUX_SYSCALLS_GAS_INTEL,
                         Backend.X86_64_GAS_ATT, Backend.X86_64_LINUX_SYSCALLS_GAS_ATT,
-                        Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM)
+                        Backend.X86_64_NASM, Backend.X86_64_LINUX_SYSCALLS_NASM]
             case ("FreeBSD", "amd64", "amd64") | ("Darwin", "x86_64", _):
-                return Backend.X86_64_GAS_INTEL, Backend.X86_64_GAS_ATT, Backend.X86_64_NASM
+                return [Backend.X86_64_GAS_INTEL, Backend.X86_64_GAS_ATT, Backend.X86_64_NASM]
             case ("Linux", "i686", _) | ("OpenBSD", _, "i386"):
-                return Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_32_NASM
+                return [Backend.X86_32_GAS_INTEL, Backend.X86_32_GAS_ATT, Backend.X86_32_NASM]
             case "NetBSD"|"OpenBSD", _, "aarch64":
-                return Backend.ARM64,
+                return [Backend.ARM64]
             case ("Linux", "armv7l", _) | ("NetBSD", _, "earmv7hf"):
-                return Backend.ARM32_THUMB, Backend.ARM32
+                return [Backend.ARM32_THUMB, Backend.ARM32]
             case "Linux", "riscv64", _:
-                return Backend.RISCV64,
+                return [Backend.RISCV64]
             case "Darwin", _, "powerpc":
-                return Backend.PPC32,
+                return [Backend.PPC32]
             case _:
                 if processor in (machine, ''):
                     hardware = machine
