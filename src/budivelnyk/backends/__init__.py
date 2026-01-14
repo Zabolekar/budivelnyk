@@ -64,6 +64,9 @@ class Backend(enum.Enum):
         self.format = Format[format]
         self.syntax = Syntax[syntax]
 
+    def __repr__(self) -> str:
+        return f"Backend({self.value!r})"
+
     @staticmethod
     def candidates() -> list[Backend]:
         system, machine, processor = platform.system(), platform.machine(), platform.processor()
