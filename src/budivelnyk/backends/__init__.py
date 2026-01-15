@@ -18,7 +18,7 @@ from .x86_64_intel import generate_x86_64_gas_intel, generate_x86_64_nasm
 __all__ = ["Backend", "InstructionSet", "InputOutput", "Format", "Syntax"]
 
 
-X86_SYNTAXES = "gas_att", "gas_intel", "nasm"
+X86_SYNTAXES = "gas_intel", "gas_att", "nasm"
 
 
 class Backend(enum.Enum):
