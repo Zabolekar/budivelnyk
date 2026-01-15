@@ -35,16 +35,35 @@ Supported backends are, in alphabetical order:
 - `X86_64_LINUX_SYSCALLS_ELF_GAS_ATT`, `X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_ELF_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
   - Linux only.
 
-A backend name consists of:
+A backend name consists of four fields:
 1. Instruction set, e.g. `X86_64`, `RISCV64`, `ARM32`, `ARM32_THUMB`
 2. What to use for input and output, e.g. `LIBC` or `LINUX_SYSCALLS`
-3. The intended executable format, e.g. `ELF` or `MACHO`. We don't produce any executable files ourselves - only with external assemblers and linkers - but the intended format still affects the assembly language we generate, e.g. whether to prefix the symbol names with an underscore).
+3. The intended executable format, e.g. `ELF` or `MACHO`. We don't produce any executable files ourselves - only with external assemblers and linkers - but the intended format still affects the assembly language we generate, e.g. symbol names and section names.
 4. The assembly language syntax. For example, the `X86_32_*`  and `X86_64_*` targets have three varians each. They will produce the same instructions when assembled, but are written differently:
 - `X86_*_GAS_ATT` backends generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
 - `X86_*_GAS_INTEL` backends generate Intel syntax as used by GAS, e.g. `inc byte ptr [rdi]`.
 - `X86_*_NASM` backends generate Intel syntax as used by NASM, e.g. `inc byte [rdi]`.
 
+**Note**: GAS code in Intel syntax and NASM code look superficially similar, but there are important differences e.g. in how they handle the Global Offset Table.
+
 The `USUAL` syntax is a catch-all term for "we only use one syntax for this platform, and don't know if it has a name".
+
+To make backend handling easier, a `Backend` object has a public attribute for each field:
+
+```pycon
+>>> from budivelnyk import Backend
+>>> riscv64 = Backend.RISCV64_LIBC_ELF_USUAL
+>>> riscv64.instruction_set
+<InstructionSet.RISCV64: 5>
+>>> riscv64.io
+<InputOutput.LIBC: 1>
+>>> riscv64.format
+<Format.ELF: 1>
+>>> riscv64.syntax
+<Syntax.USUAL: 4>
+```
+
+### Assembling and Linking the Output
 
 Output of `X86_*_NASM` should be assembled with NASM. For every other backend, use GAS or the LLVM integrated assembler; they are almost perfectly compatible, so we don't differentiate between them.
 
@@ -93,7 +112,7 @@ run:
     ret
 ```
 
-You can view the list of all backends that you can generate asm for with `tuple(Backend.__members__)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine running Linux or *BSD, the default backend is `X86_64_LIBC_ELF_GAS_INTEL`.
+You can view the list of all backends that you can generate asm for with `list(Backend)` and the list of all backends that are likely to generate code that runs on your machine with `Backend.candidates()`. The `backend` parameter is optional, the default is the first backend from `Backend.candidates()`. For example, on an AMD64 machine running Linux or *BSD, the default backend is `X86_64_LIBC_ELF_GAS_INTEL`.
 
 For convenience, there is also `Bf.file_to_asm_file` that accepts input and output paths:
 
