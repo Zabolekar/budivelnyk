@@ -109,6 +109,7 @@ run:
     add   byte ptr [rdi], 3
     inc   rdi
     sub   byte ptr [rdi], 2
+    mov   rax, rdi
     ret
 ```
 
@@ -266,6 +267,7 @@ Use `Bf.to_function` to directly create a Python function from bf code:
 >>> tape = bd.tape_with_contents(bytes([5,6]))
 >>> add = bd.Bf.to_function(">[-<+>]")
 >>> add(tape)
+<budivelnyk.tape.LP_c_ubyte object at 0x7f4e4d421c70>
 >>> tape[:]
 [11, 0]
 ```
