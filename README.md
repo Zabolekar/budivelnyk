@@ -2,6 +2,30 @@
 
 Budivelnyk is a compiler from bf to asm. The name comes from Ukrainian *будівельник* 'builder'.
 
+Example usage:
+
+```pycon
+>>> from budivelnyk import Bf
+>>> asm = Bf.to_asm("+++>--")
+>>> for line in asm:
+...     print(line)
+```
+
+Output:
+
+```
+    .intel_syntax noprefix
+
+    .globl run
+    .type run, @function
+run:
+    add   byte ptr [rdi], 3
+    inc   rdi
+    sub   byte ptr [rdi], 2
+    mov   rax, rdi
+    ret
+```
+
 ## Supported Frontends
 
 Currently, [bf](https://en.wikipedia.org/wiki/Brainfuck) is the only language we support. More precisely, it's the following bf variant:
@@ -95,21 +119,20 @@ Be aware that the tests that require executing machine code are only performed f
 
 ## Compiling to Assembly Language
 
-Example usage:
+Examples:
 
 ```pycon
 >>> from budivelnyk import Bf, Backend
->>> asm = Bf.to_asm("+++>--", backend=Backend.X86_64_LIBC_ELF_GAS_INTEL)
->>> print(*asm, sep="\n")
-    .intel_syntax noprefix
-
+>>> att = Bf.to_asm(".", backend=Backend.X86_64_LIBC_ELF_GAS_ATT)
+>>> print(*att, sep="\n")
     .globl run
     .type run, @function
 run:
-    add   byte ptr [rdi], 3
-    inc   rdi
-    sub   byte ptr [rdi], 2
-    mov   rax, rdi
+    pushq  %rdi
+    movzbq (%rdi), %rdi
+    call   putchar
+    popq   %rdi
+    movq   %rdi, %rax
     ret
 ```
 
