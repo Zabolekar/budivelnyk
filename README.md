@@ -19,7 +19,7 @@ Supported backends are, in alphabetical order:
 - `ARM32_LIBC_ELF_USUAL`: 32-bit ARM, A32 instruction set.
   - Tested on Linux, NetBSD.
 - `ARM32_THUMB_LIBC_ELF_USUAL`: 32-bit ARM, T32 instruction set aka Thumb-2.
-  - Tested on Linux, NETBSD.
+  - Tested on Linux, NetBSD.
 - `ARM64_LIBC_ELF_USUAL`: 64-bit ARM aka AArch64.
   - Tested on NetBSD, OpenBSD.
 - `PPC32_LIBC_MACHO_USUAL`: 32-bit PowerPC.
