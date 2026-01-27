@@ -90,7 +90,7 @@ See [executable_stack.md](executable_stack.md) for details.
 ## Systems Tested
 
 |           |Linux   |Darwin|OpenBSD|NetBSD|FreeBSD|
-|-----------|:------:|:----:|:-----:|:----:|:-----:|
+|-----------|--------|------|-------|------|-------|
 |**arm32**  |📝🕸️    |      |       |📝✨  |       |
 |**arm64**  |        |      |📝🕸️   |📝✨  |       |
 |**ppc32**  |        |📝✨  |       |      |       |
