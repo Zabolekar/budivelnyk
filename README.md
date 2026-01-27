@@ -41,27 +41,18 @@ Note: this bf variant is *not* Turing complete. For that, you'd need either unbo
 Supported backends are, in alphabetical order:
 
 - `ARM32_LIBC_ELF_USUAL`: 32-bit ARM, A32 instruction set.
-  - Tested on Linux, NetBSD.
 - `ARM32_THUMB_LIBC_ELF_USUAL`: 32-bit ARM, T32 instruction set aka Thumb-2.
-  - Tested on Linux, NetBSD.
 - `ARM64_LIBC_ELF_USUAL`: 64-bit ARM aka AArch64.
-  - Tested on NetBSD, OpenBSD.
-- `PPC32_LIBC_MACHO_USUAL`: 32-bit PowerPC.
-  - Tested on Mac OS X Leopard.
+- `PPC32_LIBC_MACHO_USUAL`: 32-bit PowerPC. Tested on Mac OS X Leopard.
 - `RISCV64_LIBC_ELF_USUAL`: 64-bit RISC-V.
-  - Tested on Linux.
 - `X86_32_LIBC_ELF_GAS_ATT`, `X86_32_LIBC_ELF_GAS_INTEL`, `X86_32_LIBC_ELF_NASM`: IA-32 aka i386 aka 32-bit x86.
-  - Tested on OpenBSD, occasionally tested on Linux.
 - `X86_64_LIBC_ELF_GAS_ATT`, `X86_64_LIBC_ELF_GAS_INTEL`, `X86_64_LIBC_ELF_NASM`: x86_64 aka AMD64 for ELF-based systems.
-  - Tested on Linux, occasionally tested on FreeBSD.
-- `X86_64_LIBC_MACHO_GAS_ATT`, `X86_64_LIBC_MACHO_GAS_INTEL`, `X86_64_LIBC_MACHO_NASM`: x86_64 aka AMD64 for macOS.
-  - Tested on macOS Mojave.
+- `X86_64_LIBC_MACHO_GAS_ATT`, `X86_64_LIBC_MACHO_GAS_INTEL`, `X86_64_LIBC_MACHO_NASM`: x86_64 aka AMD64 for Mach-O based systems. Tested on macOS Mojave.
 - `X86_64_LINUX_SYSCALLS_ELF_GAS_ATT`, `X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_ELF_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
-  - Linux only.
 
 A backend name consists of four fields:
 1. Instruction set, e.g. `X86_64`, `RISCV64`, `ARM32`, `ARM32_THUMB`
-2. What to use for input and output, e.g. `LIBC` or `LINUX_SYSCALLS`
+2. What to use for input and output, e.g. `LIBC` or `LINUX_SYSCALLS`. Obviously, `LINUX_SYSCALLS` will only work on Linux (or on a system emulating Linux, but we haven't tested that).
 3. The intended executable format, e.g. `ELF` or `MACHO`. We don't produce any executable files ourselves - only with external assemblers and linkers - but the intended format still affects the assembly language we generate, e.g. symbol names and section names.
 4. The assembly language syntax. For example, the `X86_32_*`  and `X86_64_*` targets have three varians each. They will produce the same instructions when assembled, but are written differently:
 - `X86_*_GAS_ATT` backends generate AT&T syntax as used by GAS, e.g. `incb (%rdi)`.
@@ -95,6 +86,24 @@ Supported linkers are GNU `ld` and LLVM's `lld`.
 
 If you assemble and link the asm code produced by budivelnyk and see a warning about executable stack, add the `-z noexecstack` linker flag.
 See [executable_stack.md](executable_stack.md) for details.
+
+## Systems Tested
+
+|           |Linux   |Darwin|OpenBSD|NetBSD|FreeBSD|
+|-----------|:------:|:----:|:-----:|:----:|:-----:|
+|**arm32**  |📝🕸️    |      |       |📝✨  |       |
+|**arm64**  |        |      |📝🕸️   |📝✨  |       |
+|**ppc32**  |        |📝✨  |       |      |       |
+|**riscv64**|📝✨    |      |       |      |       |
+|**x86_32** |📝🕸️    |      |📝✨   |      |       |
+|**x86_64** |📝🖥️🐧✨|📝✨  |       |      |📝🕸️   |
+
+- 📝: can generate human-readable assembly language and feed it to a third-party assembler.
+- 🖥️: can generate machine code and execute it from memory.
+- 🐧: can generate Linux syscalls instead of calls to libc functions.
+
+- ✨: regular testing
+- 🕸️: sporadic testing 
 
 ## Requirements
 

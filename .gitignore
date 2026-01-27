@@ -5,6 +5,7 @@
 *.egg-info
 *.code-workspace
 *.txt
+*.html
 *.swp
 wip
 
