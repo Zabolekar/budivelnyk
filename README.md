@@ -107,11 +107,11 @@ See [executable_stack.md](executable_stack.md) for details.
 
 ## Requirements
 
-The compiler itself only requires Python 3.10 or later to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking, but it's only required for developing the compiler, not for using it.
+The compiler itself only requires Python 3.11 or later to run. To run the tests, you'll also need a supported system (see above), pytest, and either GCC or Clang. We also use mypy for typechecking, but it's only required for developing the compiler, not for using it.
 
 ## Installation
 
-1. Make sure that you have git and Python 3.10 or later installed, and that the command `cc` calls either GCC or Clang.
+1. Make sure that you have git and Python 3.11 or later installed, and that the command `cc` calls either GCC or Clang.
 2. Clone the repository with `git clone https://github.com/Zabolekar/budivelnyk/` and switch into the folder with `cd budivelnyk`.
 3. Create an environment, activate it and install pytest and budivelnyk itself. There are many ways to do that, the simplest is the following:
 
