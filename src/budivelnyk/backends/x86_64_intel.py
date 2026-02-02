@@ -38,7 +38,7 @@ def _generate_prologue_nasm(backend: Backend) -> Iterator[str]:
     match backend.format:
         case Format.MACHO:
             yield f'    extern _getchar, _putchar'  # TODO: eliminate if IO not used, check if needed at all
-            yield '    global _run:function'  # TODO: check if :function gives an error message
+            yield '    global _run'
             yield '_run:'
         case Format.ELF:
             if backend.io == InputOutput.LIBC:
