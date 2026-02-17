@@ -47,7 +47,7 @@ Supported backends are, in alphabetical order:
 - `RISCV64_LIBC_ELF_USUAL`: 64-bit RISC-V.
 - `X86_32_LIBC_ELF_GAS_ATT`, `X86_32_LIBC_ELF_GAS_INTEL`, `X86_32_LIBC_ELF_NASM`: IA-32 aka i386 aka 32-bit x86.
 - `X86_64_LIBC_ELF_GAS_ATT`, `X86_64_LIBC_ELF_GAS_INTEL`, `X86_64_LIBC_ELF_NASM`: x86_64 aka AMD64 for ELF-based systems.
-- `X86_64_LIBC_MACHO_GAS_ATT`, `X86_64_LIBC_MACHO_GAS_INTEL`, `X86_64_LIBC_MACHO_NASM`: x86_64 aka AMD64 for Mach-O based systems. Tested on macOS Mojave.
+- `X86_64_LIBC_MACHO_GAS_ATT`, `X86_64_LIBC_MACHO_GAS_INTEL`, `X86_64_LIBC_MACHO_NASM`: x86_64 aka AMD64 for Mach-O based systems. Tested on macOS Mojave and/or macOS Monterey.
 - `X86_64_LINUX_SYSCALLS_ELF_GAS_ATT`, `X86_64_LINUX_SYSCALLS_ELF_GAS_INTEL`, `X86_64_LINUX_SYSCALLS_ELF_NASM`: x86_64 aka AMD64, using Linux system calls instead of C library functions.
 
 A backend name consists of four fields:
