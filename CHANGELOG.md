@@ -1,6 +1,15 @@
 This file only describes the most important changes. A more detailed history
 can be found in the version control log.
 
+# 0.1.0
+
+- Darwin/x86_64 support
+- Backend descriptions rewritten and unified (instruction set + input/output + executable format + asm syntax)
+- Added `Head` and `Machine` types
+- Added `shared_to_function`, a helper function for loading shared libraries
+- The generated `run` function now returns the head position after the machine has halted
+- Python 3.11 required (3.10 might still work, but we don't test it anymore)
+
 # 0.0.9
 
 - Simplified and documented executable stack handling
